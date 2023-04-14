@@ -1,0 +1,13 @@
+[book]
+title = "GBA From Scratch With Ferris"
+authors = ["Lokathor"]
+language = "en"
+multilingual = false
+src = "book_src"
+
+[build]
+build-dir = "target/book_out"
+create-missing = false
+
+[output.html]
+git-repository-url = "https://github.com/Lokathor/gba-from-scratch"

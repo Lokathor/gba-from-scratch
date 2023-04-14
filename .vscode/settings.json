@@ -1,0 +1,12 @@
+{
+  "rust-analyzer.check.overrideCommand": [
+    "cargo",
+    "build",
+    "--quiet",
+    "--workspace",
+    "--message-format=json",
+    "--lib",
+    "--bins",
+    "--examples"
+  ]
+}

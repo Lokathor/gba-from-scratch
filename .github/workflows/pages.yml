@@ -1,0 +1,37 @@
+
+name: Github Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          # github-pages-deploy-action requires we set this
+          persist-credentials: false
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          default: true
+      
+      - name: Install mdbook
+        run: cargo install mdbook
+      
+      - name: Build The Book
+        run: mdbook build
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: target/book_out # The folder the action should deploy.
