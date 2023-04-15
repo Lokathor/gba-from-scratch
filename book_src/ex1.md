@@ -81,3 +81,136 @@ help: consider using `cargo build -Z build-std` instead
 Ah, dang.
 If we double check the Platform Support page we might see that `thumbv4t-none-eabi` is in the "Tier 3" section.
 Tier 3 targets don't have a standard library available in `rustup`.
+
+How about this `build-std` thing?
+The `-Z` flags are all unstable flags, so we can check the [unstable section](https://doc.rust-lang.org/cargo/reference/unstable.html) of the cargo manual.
+Looks like [build-std](https://doc.rust-lang.org/cargo/reference/unstable.html#build-std) lets us build our own standard library.
+We're going to need Nightly rust, so set that up how you want if you need to.
+You can use `rustup default nightly` (which sets the *system global* default), or you can use a [toolchain file](https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file) if you want to use Nightly on just this one project.
+Once we've set for Nightly use, we need to get the `rust-src` component from `rustup` too.
+
+```
+rustup default nightly
+rustup component add rust-src
+```
+
+Okay let's try again
+
+```
+> cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std
+   Compiling compiler_builtins v0.1.89
+   Compiling core v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/core)
+   Compiling libc v0.2.140
+   Compiling cc v1.0.77
+   Compiling memchr v2.5.0
+   Compiling std v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/std)
+   Compiling unwind v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/unwind)
+   Compiling rustc-std-workspace-core v1.99.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/rustc-std-workspace-core)
+   Compiling alloc v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc)
+   Compiling cfg-if v1.0.0
+   Compiling adler v1.0.2
+   Compiling rustc-demangle v0.1.21
+   Compiling rustc-std-workspace-alloc v1.99.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/rustc-std-workspace-alloc)
+   Compiling panic_abort v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/panic_abort)
+   Compiling panic_unwind v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/panic_unwind)
+   Compiling gimli v0.26.2
+   Compiling miniz_oxide v0.5.3
+   Compiling hashbrown v0.12.3
+   Compiling object v0.29.0
+   Compiling std_detect v0.1.5 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/stdarch/crates/std_detect)
+error[E0432]: unresolved import `alloc::sync`
+ --> /Users/dg/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gimli-0.26.2/src/read/dwarf.rs:2:12
+  |
+2 | use alloc::sync::Arc;
+  |            ^^^^ could not find `sync` in `alloc`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `gimli` (lib) due to previous error
+warning: build failed, waiting for other jobs to finish...
+```
+
+Whoa... that's way too much.
+We didn't mean for all of that to happen.
+Let's check that cargo manual again.
+Ah, it says we need to pass an argument to our command line argument if we don't want as much stuff to be build
+
+```
+> cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core 
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+error[E0463]: can't find crate for `std`
+  |
+  = note: the `thumbv4t-none-eabi` target may not support the standard library
+  = note: `std` is required by `gba_from_scratch` because it does not declare `#![no_std]`
+  = help: consider building the standard library from source with `cargo build -Zbuild-std`
+
+For more information about this error, try `rustc --explain E0463`.
+error: could not compile `gba_from_scratch` (lib) due to previous error
+```
+
+That's different from before at least.
+Well, we told to to only build `core` and not `std`, and then it said we couldn't use `std`.
+Makes sense.
+Lets change the example.
+
+```rs
+// ex1.rs
+#![no_std]
+
+fn main() {
+  println!("hello");
+}
+```
+
+And we need to fix our `lib.rs` to also be `no_std`.
+It doesn't do anything else for now, it's just blank beyond being no_std.
+
+```rust
+// lib.rs
+#![no_std]
+```
+
+Now rust-analyzer is telling me we can't use println in our example.
+Also, we're missing a `#[panic_handler]`.
+Here's the error.
+
+```
+> cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+error: cannot find macro `println` in this scope
+ --> examples/ex1.rs:4:3
+  |
+4 |   println!("hello");
+  |   ^^^^^^^
+
+error: `#[panic_handler]` function required, but not found
+
+error: could not compile `gba_from_scratch` (example "ex1") due to 2 previous errors
+```
+
+Well, we can comment out the `println!`.
+For the panic handler, we go to the [Attributes](https://doc.rust-lang.org/reference/attributes.html) part of the rust reference.
+That links us to [panic_handler](https://doc.rust-lang.org/reference/runtime.html#the-panic_handler-attribute), which sets what function gets called in event of panic.
+
+```rust
+// main.rs
+#![no_std]
+
+fn main() {
+  //
+}
+
+#[panic_handler]
+fn panic_handler(_: &core::panic::PanicInfo) -> ! {
+  loop {}
+}
+```
+
+Now we get a new, different error when we try to build:
+
+```
+> cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+error: requires `start` lang_item
+
+error: could not compile `gba_from_scratch` (example "ex1") due to previous error
+```
