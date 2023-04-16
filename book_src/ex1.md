@@ -3,6 +3,8 @@
 
 Let's program some stuff to run on the GBA.
 
+## Basic Compilation
+
 As usual with any new Rust project we'll need a `Cargo.toml` file:
 
 ```toml
@@ -192,7 +194,7 @@ For the panic handler, we go to the [Attributes](https://doc.rust-lang.org/refer
 That links us to [panic_handler](https://doc.rust-lang.org/reference/runtime.html#the-panic_handler-attribute), which sets what function gets called in event of panic.
 
 ```rust
-// main.rs
+// ex1.rs
 #![no_std]
 
 fn main() {
@@ -205,7 +207,7 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
 }
 ```
 
-Now we get a new, different error when we try to build:
+Now we get a new, *different* error when we try to build:
 
 ```
 > cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
@@ -214,3 +216,49 @@ error: requires `start` lang_item
 
 error: could not compile `gba_from_scratch` (example "ex1") due to previous error
 ```
+
+Alright so what's this `start` lang item deal?
+Well it has to do with the operating system being able to run your executable.
+The details aren't important for us, because there's no operating system on the GBA.
+Instead of trying to work with the `start` thing, we'll declare our program as `#![no_main]`.
+This prevents the compiler from automatically generating the `main` entry fn, which is what's looking to call that start fn.
+Note that this generated `main` fn is *separate* from the `main` fn that we normally think of as being the start of the program.
+Because, as always, programmers are very good at naming things.
+
+```rust
+// ex1.rs
+#![no_std]
+#![no_main]
+
+fn main() {
+  //
+}
+
+#[panic_handler]
+fn panic_handler(_: &core::panic::PanicInfo) -> ! {
+  loop {}
+}
+```
+
+Okay let's try another build.
+
+```
+> cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+warning: function `main` is never used
+ --> examples/ex1.rs:4:4
+  |
+4 | fn main() {
+  |    ^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `gba_from_scratch` (example "ex1") generated 1 warning
+    Finished dev [unoptimized + debuginfo] target(s) in 0.64s
+```
+
+Okay.
+It builds.
+
+## Running The Program In An Emulator
+
