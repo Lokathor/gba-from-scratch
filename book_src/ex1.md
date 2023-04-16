@@ -52,7 +52,7 @@ We can certainly talk more about that later, but for now you just gotta go with 
 Let's see what happens when we pass `--target thumbv4t-none-eabi` as part of a call to `cargo`:
 
 ```
-D:\dev\gba-from-scratch>cargo build --example ex1 --target thumbv4t-none-eabi
+>cargo build --example ex1 --target thumbv4t-none-eabi
    Compiling gba_from_scratch v0.1.0 (D:\dev\gba-from-scratch)
 error[E0463]: can't find crate for `std`
   |
@@ -74,7 +74,7 @@ One suggested way to fix the problem is to add the `thumbv4t-none-eabi` target w
 It seems pretty low risk to just try installing that, so let's see.
 
 ```
-D:\dev\gba-from-scratch>rustup target add thumbv4t-none-eabi
+>rustup target add thumbv4t-none-eabi
 error: toolchain 'nightly-x86_64-pc-windows-msvc' does not contain component 'rust-std' for target 'thumbv4t-none-eabi'; did you mean 'thumbv6m-none-eabi'?
 note: not all platforms have the standard library pre-compiled: https://doc.rust-lang.org/nightly/rustc/platform-support.html
 help: consider using `cargo build -Z build-std` instead
@@ -260,5 +260,72 @@ warning: `gba_from_scratch` (example "ex1") generated 1 warning
 Okay.
 It builds.
 
-## Running The Program In An Emulator
+Let's see if it works I guess.
+Personally I like to use [mGBA](https://mgba.io/) as my emulator of choice, but any GBA emulator should be fine.
+If you're on Windows then your executable will be called `mgba.exe` by default, and if you're on Mac or Linux you'll get both `mgba` (no UI) and `mgba-qt` (has a menu bar and such around the video frame).
+On my Windows machine I just made a copy of `mgba.exe` that's called `mgba-qt.exe` so that both names work on all of my devices.
+
+```
+>mgba target/thumbv4t-none-eabi/debug/examples/ex1
+```
+
+The emulator starts and then... shows a dialog box.
+"An error occurred." says the box's title bar.
+"Could not load game. Are you sure it's in the correct format?"
+Well, sorry mgba, but we're not sure it's in the correct format.
+In fact, we're pretty sure it's *not* the correct format right now.
+I guess we'll have to inspect the compilation output.
+
+## ARM Binutils
+
+If we go to ARM's developer website we can fine the [ARM Toolchain Downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) page.
+This lets us download the tools for working with executables for the `arm-none-eabi` family of targets.
+This includes our `thumbv4t` program, as well as other variants of ARM code.
+You can get it from their website, or if you're on a Linux you can probably get it from your package manager.
+
+The binutils package for a target family has many individual tools.
+The ones we'll be using will all be named `arm-none-eabi-` to start, to distinguish them from the same tool for other targets.
+So if we want to use "objdump" we call it with `arm-none-eabi-objdump` and so on.
+That's exactly what we want to use right now.
+We pass the name of the compiled executable, and then whichever other options we want.
+For now let's look at the `--section-headers`
+
+```
+> arm-none-eabi-objdump target/thumbv4t-none-eabi/debug/examples/ex1 --section-headers
+
+target/thumbv4t-none-eabi/debug/examples/ex1:     file format elf32-littlearm
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .debug_abbrev 000000f4  00000000  00000000  00000094  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  1 .debug_info   000005a6  00000000  00000000  00000188  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  2 .debug_aranges 00000020  00000000  00000000  0000072e  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  3 .debug_str    00000495  00000000  00000000  0000074e  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  4 .debug_pubnames 000000c0  00000000  00000000  00000be3  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  5 .debug_pubtypes 00000364  00000000  00000000  00000ca3  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  6 .ARM.attributes 00000030  00000000  00000000  00001007  2**0
+                  CONTENTS, READONLY
+  7 .debug_frame  00000028  00000000  00000000  00001038  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  8 .debug_line   00000042  00000000  00000000  00001060  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  9 .comment      00000013  00000000  00000000  000010a2  2**0
+                  CONTENTS, READONLY
+```
+
+There's a few columns of note:
+
+* `Size` is the number of bytes for the section.
+* `VMA` is the Virtual Memory Address. On the GBA this means the intended address when the main program is running. All of our data starts in ROM, and some of it we will copy into RAM just after boot. When a section is intended to be copied into RAM, it will have a VMA separate from the LMA.
+* `LMA` is the Logical Memory Address. On the GBA this means the address in ROM.
+
+Which means... according to the chart... none of this data would end up in the ROM.
+I guess that means that, if we extracted our raw program from the ELF format, we would end up with a totally blank ROM.
+That certainly doesn't sound like what mgba would call the "correct format".
 
