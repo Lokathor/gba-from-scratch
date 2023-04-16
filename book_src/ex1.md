@@ -326,6 +326,6 @@ There's a few columns of note:
 * `LMA` is the Logical Memory Address. On the GBA this means the address in ROM.
 
 Which means... according to the chart... none of this data would end up in the ROM.
-I guess that means that, if we extracted our raw program from the ELF format, we would end up with a totally blank ROM.
+I guess that means that, if we extracted our raw program from the [ELF](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) container file that the compiler uses, we would end up with a totally blank ROM.
 That certainly doesn't sound like what mgba would call the "correct format".
 
