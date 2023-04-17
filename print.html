@@ -1,0 +1,806 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>GBA From Scratch With Ferris</title>
+        <meta name="robots" content="noindex" />
+
+
+        <!-- Custom HTML head -->
+        <!-- Open Graph tags-->
+        <meta name="og:site_name" content="GBA From Scratch With Ferris" />
+        <meta name="og:title" content="GBA From Scratch With Ferris" />
+        <meta name="og:description" content="" />
+        
+        <!-- Twitter meta tags -->
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@lokathor" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="ex1.html"><strong aria-hidden="true">1.</strong> Basics</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">GBA From Scratch With Ferris</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/Lokathor/gba-from-scratch" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>This is a series about how to program for the Game Boy Advance (GBA) using the Rust programming language.</p>
+<h2 id="license"><a class="header" href="#license">License</a></h2>
+<p>The work in this project is licensed as follows:</p>
+<ul>
+<li>Rust code: <code>Zlib OR Apache-2.0 OR MIT</code></li>
+<li>All other content (linker scripts, book text, etc): <code>CC0-1.0</code></li>
+</ul>
+<h2 id="support-the-project"><a class="header" href="#support-the-project">Support The Project</a></h2>
+<p>If you'd like to support the book you can sign up to be a <a href="https://github.com/sponsors/Lokathor">Github Sponsor</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="basics"><a class="header" href="#basics">Basics</a></h1>
+<p>Let's program some stuff to run on the GBA.</p>
+<h2 id="basic-compilation"><a class="header" href="#basic-compilation">Basic Compilation</a></h2>
+<p>As usual with any new Rust project we'll need a <code>Cargo.toml</code> file:</p>
+<pre><code class="language-toml"># Cargo.toml
+
+[package]
+name = &quot;gba_from_scratch&quot;
+version = &quot;0.1.0&quot;
+edition = &quot;2021&quot;
+</code></pre>
+<p>And we want some sort of program to run so let's make an example called <code>ex1.rs</code> in the <code>examples/</code> directory.
+It can just be a classic &quot;Hello, World&quot; type program to start.</p>
+<pre><pre class="playground"><code class="language-rust">// examples/ex1.rs
+
+fn main() {
+  println!(&quot;hello&quot;);
+}</code></pre></pre>
+<p>Since we're not running the compiler on the GBA itself, then we'll need to &quot;cross-compile&quot; our program.
+It's called &quot;cross compilation&quot; when you build a program for some system <em>other</em> than the system that you're running the compiler on.
+The system running the compiler is called the &quot;host&quot; system, and the system you're building for is called the &quot;target&quot; system.
+In our case, the host system can be basically anything that can run a Rust toolchain.
+I've had success on Windows, Linux, and Mac, there's no big difficulties.</p>
+<p>To do a cross compile, we pass <a href="https://doc.rust-lang.org/cargo/commands/cargo-build.html#compilation-options">--target</a> to <code>cargo</code>.
+If we look up the <a href="https://en.wikipedia.org/wiki/Game_Boy_Advance">Game Boy Advance</a> on wikipedia, we can see that it has an <a href="https://en.wikipedia.org/wiki/ARM7#ARM7TDMI">ARM7TDMI</a> CPU.
+The &quot;ARM7T&quot; part means that it uses the &quot;ARMv4T&quot; CPU architecture.
+Now we go the <a href="https://doc.rust-lang.org/nightly/rustc/platform-support.html">Platform Support</a> page and use &quot;ctrl+F&quot; to look for &quot;ARMv4T&quot;.
+We can see three(-ish) entries that might(?) be what we want.</p>
+<ul>
+<li><code>armv4t-none-eabi</code></li>
+<li><code>armv4t-unknown-linux-gnueabi</code></li>
+<li><code>thumbv4t-none-eabi</code></li>
+</ul>
+<p>This is the part where my &quot;teach like you're telling a story&quot; style breaks down a bit.
+What should happen next is that we pick the <code>thumbv4t-none-eabi</code> target.
+Except there's not an easy to find document that tells you this step that I can just link to and have you read a few lines.
+The shortest version of the full explanation is something like &quot;Many ARM CPUs support two code 'states', and one of them is called '<a href="https://en.wikipedia.org/wiki/ARM_architecture_family#Thumb">thumb</a>', and that's the better default on the GBA.&quot;
+We can certainly talk more about that later, but for now you just gotta go with it.</p>
+<p>Let's see what happens when we pass <code>--target thumbv4t-none-eabi</code> as part of a call to <code>cargo</code>:</p>
+<pre><code>&gt;cargo build --example ex1 --target thumbv4t-none-eabi
+   Compiling gba_from_scratch v0.1.0 (D:\dev\gba-from-scratch)
+error[E0463]: can't find crate for `std`
+  |
+  = note: the `thumbv4t-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv4t-none-eabi`
+  = help: consider building the standard library from source with `cargo build -Zbuild-std`
+
+error: requires `sized` lang_item
+
+For more information about this error, try `rustc --explain E0463`.
+error: could not compile `gba_from_scratch` (lib) due to 2 previous errors
+</code></pre>
+<p>Well we seem to have already configured something wrong, somehow.
+The trouble with a wrong project configuration is that the compiler can't always guess what you <em>meant</em> to do.
+This means that the error message suggestions might be helpful, but they also might lead you down the wrong path.</p>
+<p>One suggested way to fix the problem is to add the <code>thumbv4t-none-eabi</code> target with <code>rustup</code>.
+It seems pretty low risk to just try installing that, so let's see.</p>
+<pre><code>&gt;rustup target add thumbv4t-none-eabi
+error: toolchain 'nightly-x86_64-pc-windows-msvc' does not contain component 'rust-std' for target 'thumbv4t-none-eabi'; did you mean 'thumbv6m-none-eabi'?
+note: not all platforms have the standard library pre-compiled: https://doc.rust-lang.org/nightly/rustc/platform-support.html
+help: consider using `cargo build -Z build-std` instead
+</code></pre>
+<p>Ah, dang.
+If we double check the Platform Support page we might see that <code>thumbv4t-none-eabi</code> is in the &quot;Tier 3&quot; section.
+Tier 3 targets don't have a standard library available in <code>rustup</code>.</p>
+<p>How about this <code>build-std</code> thing?
+The <code>-Z</code> flags are all unstable flags, so we can check the <a href="https://doc.rust-lang.org/cargo/reference/unstable.html">unstable section</a> of the cargo manual.
+Looks like <a href="https://doc.rust-lang.org/cargo/reference/unstable.html#build-std">build-std</a> lets us build our own standard library.
+We're going to need Nightly rust, so set that up how you want if you need to.
+You can use <code>rustup default nightly</code> (which sets the <em>system global</em> default), or you can use a <a href="https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file">toolchain file</a> if you want to use Nightly on just this one project.
+Once we've set for Nightly use, we need to get the <code>rust-src</code> component from <code>rustup</code> too.</p>
+<pre><code>rustup default nightly
+rustup component add rust-src
+</code></pre>
+<p>Okay let's try again</p>
+<pre><code>&gt; cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std
+   Compiling compiler_builtins v0.1.89
+   Compiling core v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/core)
+   Compiling libc v0.2.140
+   Compiling cc v1.0.77
+   Compiling memchr v2.5.0
+   Compiling std v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/std)
+   Compiling unwind v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/unwind)
+   Compiling rustc-std-workspace-core v1.99.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/rustc-std-workspace-core)
+   Compiling alloc v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc)
+   Compiling cfg-if v1.0.0
+   Compiling adler v1.0.2
+   Compiling rustc-demangle v0.1.21
+   Compiling rustc-std-workspace-alloc v1.99.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/rustc-std-workspace-alloc)
+   Compiling panic_abort v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/panic_abort)
+   Compiling panic_unwind v0.0.0 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/panic_unwind)
+   Compiling gimli v0.26.2
+   Compiling miniz_oxide v0.5.3
+   Compiling hashbrown v0.12.3
+   Compiling object v0.29.0
+   Compiling std_detect v0.1.5 (/Users/dg/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library/stdarch/crates/std_detect)
+error[E0432]: unresolved import `alloc::sync`
+ --&gt; /Users/dg/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gimli-0.26.2/src/read/dwarf.rs:2:12
+  |
+2 | use alloc::sync::Arc;
+  |            ^^^^ could not find `sync` in `alloc`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `gimli` (lib) due to previous error
+warning: build failed, waiting for other jobs to finish...
+</code></pre>
+<p>Whoa... that's way too much.
+We didn't mean for all of that to happen.
+Let's check that cargo manual again.
+Ah, it says we need to pass an argument to our command line argument if we don't want as much stuff to be build</p>
+<pre><code>&gt; cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core 
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+error[E0463]: can't find crate for `std`
+  |
+  = note: the `thumbv4t-none-eabi` target may not support the standard library
+  = note: `std` is required by `gba_from_scratch` because it does not declare `#![no_std]`
+  = help: consider building the standard library from source with `cargo build -Zbuild-std`
+
+For more information about this error, try `rustc --explain E0463`.
+error: could not compile `gba_from_scratch` (lib) due to previous error
+</code></pre>
+<p>That's different from before at least.
+Well, we told to to only build <code>core</code> and not <code>std</code>, and then it said we couldn't use <code>std</code>.
+Makes sense.
+Lets change the example.</p>
+<pre><code class="language-rs">// ex1.rs
+#![no_std]
+
+fn main() {
+  println!(&quot;hello&quot;);
+}
+</code></pre>
+<p>And we need to fix our <code>lib.rs</code> to also be <code>no_std</code>.
+It doesn't do anything else for now, it's just blank beyond being no_std.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// lib.rs
+#![no_std]
+<span class="boring">}</span></code></pre></pre>
+<p>Now rust-analyzer is telling me we can't use println in our example.
+Also, we're missing a <code>#[panic_handler]</code>.
+Here's the error.</p>
+<pre><code>&gt; cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+error: cannot find macro `println` in this scope
+ --&gt; examples/ex1.rs:4:3
+  |
+4 |   println!(&quot;hello&quot;);
+  |   ^^^^^^^
+
+error: `#[panic_handler]` function required, but not found
+
+error: could not compile `gba_from_scratch` (example &quot;ex1&quot;) due to 2 previous errors
+</code></pre>
+<p>Well, we can comment out the <code>println!</code>.
+For the panic handler, we go to the <a href="https://doc.rust-lang.org/reference/attributes.html">Attributes</a> part of the rust reference.
+That links us to <a href="https://doc.rust-lang.org/reference/runtime.html#the-panic_handler-attribute">panic_handler</a>, which sets what function gets called in event of panic.</p>
+<pre><pre class="playground"><code class="language-rust">// ex1.rs
+#![no_std]
+
+fn main() {
+  //
+}
+
+#[panic_handler]
+fn panic_handler(_: &amp;core::panic::PanicInfo) -&gt; ! {
+  loop {}
+}</code></pre></pre>
+<p>Now we get a new, <em>different</em> error when we try to build:</p>
+<pre><code>&gt; cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+error: requires `start` lang_item
+
+error: could not compile `gba_from_scratch` (example &quot;ex1&quot;) due to previous error
+</code></pre>
+<p>Alright so what's this <code>start</code> lang item deal?
+Well it has to do with the operating system being able to run your executable.
+The details aren't important for us, because there's no operating system on the GBA.
+Instead of trying to work with the <code>start</code> thing, we'll declare our program as <code>#![no_main]</code>.
+This prevents the compiler from automatically generating the <code>main</code> entry fn, which is what's looking to call that start fn.
+Note that this generated <code>main</code> fn is <em>separate</em> from the <code>main</code> fn that we normally think of as being the start of the program.
+Because, as always, programmers are very good at naming things.</p>
+<pre><pre class="playground"><code class="language-rust">// ex1.rs
+#![no_std]
+#![no_main]
+
+fn main() {
+  //
+}
+
+#[panic_handler]
+fn panic_handler(_: &amp;core::panic::PanicInfo) -&gt; ! {
+  loop {}
+}</code></pre></pre>
+<p>Okay let's try another build.</p>
+<pre><code>&gt; cargo build --example ex1 --target thumbv4t-none-eabi -Z build-std=core
+   Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
+warning: function `main` is never used
+ --&gt; examples/ex1.rs:4:4
+  |
+4 | fn main() {
+  |    ^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `gba_from_scratch` (example &quot;ex1&quot;) generated 1 warning
+    Finished dev [unoptimized + debuginfo] target(s) in 0.64s
+</code></pre>
+<p>Okay.
+It builds.</p>
+<p>Let's see if it works I guess.
+Personally I like to use <a href="https://mgba.io/">mGBA</a> as my emulator of choice, but any GBA emulator should be fine.
+If you're on Windows then your executable will be called <code>mgba.exe</code> by default, and if you're on Mac or Linux you'll get both <code>mgba</code> (no UI) and <code>mgba-qt</code> (has a menu bar and such around the video frame).
+On my Windows machine I just made a copy of <code>mgba.exe</code> that's called <code>mgba-qt.exe</code> so that both names work on all of my devices.</p>
+<pre><code>&gt; mgba target/thumbv4t-none-eabi/debug/examples/ex1
+</code></pre>
+<p>The emulator starts and then... shows a dialog box.
+&quot;An error occurred.&quot; says the box's title bar.
+&quot;Could not load game. Are you sure it's in the correct format?&quot;
+Well, sorry mgba, but we're not sure it's in the correct format.
+In fact, we're pretty sure it's <em>not</em> the correct format right now.
+I guess we'll have to inspect the compilation output.</p>
+<h2 id="arm-binutils"><a class="header" href="#arm-binutils">ARM Binutils</a></h2>
+<p>If we go to ARM's developer website we can fine the <a href="https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads">ARM Toolchain Downloads</a> page.
+This lets us download the tools for working with executables for the <code>arm-none-eabi</code> family of targets.
+This includes our <code>thumbv4t</code> program, as well as other variants of ARM code.
+You can get it from their website, or if you're on a Linux you can probably get it from your package manager.</p>
+<p>The binutils package for a target family has many individual tools.
+The ones we'll be using will all be named <code>arm-none-eabi-</code> to start, to distinguish them from the same tool for other targets.
+So if we want to use &quot;objdump&quot; we call it with <code>arm-none-eabi-objdump</code> and so on.
+That's exactly what we want to use right now.
+We pass the name of the compiled executable, and then whichever other options we want.
+For now let's look at the <code>--section-headers</code></p>
+<pre><code>&gt; arm-none-eabi-objdump target/thumbv4t-none-eabi/debug/examples/ex1 --section-headers
+
+target/thumbv4t-none-eabi/debug/examples/ex1:     file format elf32-littlearm
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .debug_abbrev 000000f4  00000000  00000000  00000094  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  1 .debug_info   000005a6  00000000  00000000  00000188  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  2 .debug_aranges 00000020  00000000  00000000  0000072e  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  3 .debug_str    00000495  00000000  00000000  0000074e  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  4 .debug_pubnames 000000c0  00000000  00000000  00000be3  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  5 .debug_pubtypes 00000364  00000000  00000000  00000ca3  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  6 .ARM.attributes 00000030  00000000  00000000  00001007  2**0
+                  CONTENTS, READONLY
+  7 .debug_frame  00000028  00000000  00000000  00001038  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  8 .debug_line   00000042  00000000  00000000  00001060  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  9 .comment      00000013  00000000  00000000  000010a2  2**0
+                  CONTENTS, READONLY
+</code></pre>
+<p>There's a few columns of note:</p>
+<ul>
+<li><code>Size</code> is the number of bytes for the section.</li>
+<li><code>VMA</code> is the Virtual Memory Address. On the GBA this means the intended address when the main program is running. All of our data starts in ROM, and some of it we will copy into RAM just after boot. When a section is intended to be copied into RAM, it will have a VMA separate from the LMA.</li>
+<li><code>LMA</code> is the Logical Memory Address. On the GBA this means the address in ROM.</li>
+</ul>
+<p>Which means... according to the chart... none of this data would end up in the ROM?
+I guess that means that, if we extracted our raw program from the <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> container file that the compiler uses, we would end up with a totally blank ROM.
+That certainly doesn't sound like what mgba would call the &quot;correct format&quot;.</p>
+<h2 id="linker-scripts"><a class="header" href="#linker-scripts">Linker Scripts</a></h2>
+<p>What's wrong is that we need to adjust the <a href="https://sourceware.org/binutils/docs/ld/Scripts.html">linker script</a>.
+That link goes to the documentation for the binutils linker (called <code>ld</code>), and technically we're actually using the linker that ships with the compiler (called <code>rust-lld</code>).
+<code>rust-lld</code> is the Rust version of <code>lld</code>, which is LLVM's linker that's intended to be a &quot;drop in&quot; replacement for GNU's <code>ld</code>.
+Both linkers use a linker script system, and they both even use the same linker script format.
+I tried to find an in depth manual for <code>lld</code> specifically, but all I could find was the top level &quot;man page&quot; explanations.
+Referring to the the GNU <code>ld</code> manual will have to do.</p>
+<p>You don't have to read the whole manual, the short story goes like this: linkers take one or more &quot;object&quot; files and &quot;link&quot; them into a single &quot;executable&quot; file.
+The linker script is what guides the linker in exactly what to do.
+If you don't say what script to use then the linker will use a default linker script that it keeps wherever.
+When the target is a &quot;normal&quot; target like Windows or Mac then using a default linker script is just fine.
+When the target is something a little more esoteric, like most embedded devices, including the GBA, then the default won't be good enough.
+We'll have to write our own script and make the linker use that.</p>
+<p>One complexity here is that the linker script to use is an argument passed to the linker.
+And the way you pass args to the linker is that you tell <code>rustc</code> to do it.
+Except with <code>cargo build</code> there's no way to tell <code>rustc</code> an extra argument.
+We could use <code>cargo rustc</code>, but it's a pain to have to remember an alternate command.
+As much as possible we'd like <code>cargo build</code> to work.
+We could use a <code>build.rs</code> file to pass an arg to the linker, but making a build script just to pass one argument seems like maybe overkill.
+Probably we should just set it as part of our the <code>RUSTFLAGS</code> environment variable.
+The catch with <code>RUSTFLAGS</code> is that any time you change it you have to build <em>the entire crate graph</em> again.
+We want to &quot;write it down&quot; (so to speak) and have it automatically be the same every time.
+This can be done with a <a href="https://doc.rust-lang.org/cargo/reference/config.html#configuration">cargo configuration</a> file.</p>
+<p>First let's make a blank <code>normal_boot.ld</code> file in a <code>linker_scripts/</code> folder.
+Then in the <code>.cargo</code> folder we fill in <code>config.toml</code></p>
+<pre><code class="language-toml"># .cargo/config.toml
+
+[target.thumbv4t-none-eabi]
+rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+</code></pre>
+<p>while we're at it, we can even set a default target (which is used when we don't specify <code>--target</code>, and we can configure for <code>build-std</code> to be automatically be used, all in the same file.</p>
+<pre><code class="language-toml"># .cargo/config.toml
+
+[unstable]
+build-std = [&quot;core&quot;]
+
+[build]
+target = &quot;thumbv4t-none-eabi&quot;
+
+[target.thumbv4t-none-eabi]
+rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+</code></pre>
+<p>Great, let's try it out</p>
+<pre><code>&gt; cargo build --example ex1
+warning: function `main` is never used
+ --&gt; examples\ex1.rs:4:4
+  |
+4 | fn main() {
+  |    ^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `gba_from_scratch` (example &quot;ex1&quot;) generated 1 warning
+    Finished dev [unoptimized + debuginfo] target(s) in 0.10s
+</code></pre>
+<p>Cool.
+It's a lot less to type, and we're ready to fill in our linker script.</p>
+<p>Our linker script is called <code>normal_boot.ld</code> because there's two ways for the GBA to boot up.
+One of them is the &quot;normal&quot; style with a program running off of the game pak.
+The other is &quot;multiboot&quot; where the GBA can download a program over the link cable.
+Since we might want to do multiboot some day, we might as well give our linker script a specific name to start with.
+Once things are set up we won't really have to think about it on a regular basis, so it's fine.</p>
+<p>There's three things we'll have to concern ourselves with:</p>
+<ul>
+<li>The <a href="https://sourceware.org/binutils/docs/ld/Entry-Point.html">entry point</a></li>
+<li>The <a href="https://sourceware.org/binutils/docs/ld/MEMORY.html">memory</a> locations</li>
+<li>The <a href="https://sourceware.org/binutils/docs/ld/SECTIONS.html">sections</a></li>
+</ul>
+<p>Picking an entry point is easy, it's just the name of a symbol.
+The traditional entry point name is just <code>_start</code>, so we'll go with that.</p>
+<pre><code class="language-ld">ENTRY(_start)
+</code></pre>
+<p>Having an entry point set <em>doesn't really matter</em> for running the program on actual GBA hardware.
+Still when the entry point ends up at one of the usual address values, it helps the heuristic system mgba uses to determine if it should run our program as a normal game or a multiboot game, so it's not entirely useless.</p>
+<p>Which brings us to the memory portion.</p>
+<p>The GBA has three main chunks of memory: Read-Only Memory (ROM), Internal Work RAM (IWRAM), and External Work RAM (EWRAM).
+We can cover more of the fine differences later, for now it's enough to write them down into our linker script.
+For each one we have to specify the base address and the size in bytes.</p>
+<pre><code class="language-ld">MEMORY {
+  ewram (w!x) : ORIGIN = 0x2000000, LENGTH = 256K
+  iwram (w!x) : ORIGIN = 0x3000000, LENGTH = 32K
+  rom (rx)    : ORIGIN = 0x8000000, LENGTH = 32M
+}
+</code></pre>
+<p>Finally, we have to tell the linker which <em>output</em> section to assign all of the <em>input</em> sections it finds.
+This uses a glob-matching sort of system.
+We specify an output section that we want to have created, and then in the braces for it we list matchers that are checked against each input section the linker sees.
+When an input section fits one of the matchers, it goes with that output section.</p>
+<p>Program code is supposed to end up in the <code>.text</code> section, so we can start with just that.</p>
+<pre><code class="language-ld">SECTIONS {
+  .text : {
+    *(.text .text.*);
+  } &gt;rom
+}
+</code></pre>
+<p>Here we've got one matcher listed, <code>*(.text .text.*);</code>.
+The <code>*</code> at the start means it applies to any input file.
+We could limit what files it applies to, if we wanted, but generally we shouldn't.
+Inside the parenthesis is a space separated list of globs.
+We've got two: <code>.text</code> and <code>.text.*</code>.
+The first is for the exact match <code>.text</code>, and the second is for anything that starts with <code>.text.</code>.
+The convention for section names is to start with a <code>.</code>, and they can't have spaces.
+Rust will default to having every function in its own section, all with the prefix <code>.text.</code>.
+Unused code can only be removed one entire input section at a time, so having every function in a distinct input section keeps our output as small as possible.</p>
+<p>The <code>&gt;rom</code> part after tha braces allocates the entire output section into the <code>rom</code> memory that we declared before.</p>
+<p>All together, we've got this:</p>
+<pre><code class="language-ld">/* normal_boot.ld */
+/* THIS LINKER SCRIPT FILE IS RELEASED TO THE PUBLIC DOMAIN (SPDX: CC0-1.0) */
+
+ENTRY(_start)
+
+MEMORY {
+  ewram (w!x) : ORIGIN = 0x2000000, LENGTH = 256K
+  iwram (w!x) : ORIGIN = 0x3000000, LENGTH = 32K
+  rom (rx)    : ORIGIN = 0x8000000, LENGTH = 32M
+}
+
+SECTIONS {
+  .text : {
+    *(.text._start);
+    *(.text .text.*);
+  } &gt;rom
+}
+</code></pre>
+<p>This isn't a complete and &quot;final&quot; linker script, but for now it's enough to let us proceed.</p>
+<p>If we rebuild the program right now we still won't get anything in the output <code>.text</code> section.
+Remember that dead code warning we keep getting on our <code>main</code> function?
+Nothing in our program ever calls <code>main</code>, and it's not public for outsiders to call, so it gets discarded during linking.
+Since no code can call <code>main</code> then no code can panic either, and the <code>panic_handler</code> function gets removed as well.
+We end up with nothing at all.</p>
+<p>We need to add some code to our progam so that there will be something to output.
+Might as well define the <code>_start</code> function.</p>
+<p><code>_start</code> doesn't work like a normal function.
+The way the very start of the GBA's ROM works is special.
+When the GBA first boots the BIOS (which is part of the GBA itself, not part of our ROM) takes control.
+It and plays the boot animation and sound that you're probably familiar with, then does a checksum on our ROM's header data.
+If the checksum passes the BIOS jumps control to <code>0x0800_0000</code> (the start of ROM).
+That's where our <code>_start</code> will be.
+The first instruction can be &quot;anything&quot; but immediateley after that is the rest of the header data.
+That means that in practice the very first instruction of <code>_start</code> has to be a jump <em>past</em> the rest of the header data, since the header data isn't executable code.</p>
+<p>Sticking non-executable data into the middle of a function isn't something that the compiler is really capable of dealing with, so we'll have to take direct control of the situation.
+We could do this using either <a href="https://doc.rust-lang.org/core/arch/macro.global_asm.html">global_assembly!</a> or a <a href="https://github.com/rust-lang/rust/issues/90957">#[naked]</a> function.
+One might think that we should pick the Stable option (global assembly), over the Nightly option (a naked function).
+However, naked functions are basically much easier to work with.
+Since using <code>build-std</code> means that we have to use Nightly anyway, it's not that bad to also use naked functions as well.
+If naked functions were the very last thing that required us to use Nightly we could move to global assembly instead.</p>
+<p>At the top of <code>ex1.rs</code> we need to add <code>#![feature(naked_functions)]</code>.</p>
+<p>Then we add our <code>_start</code> function.
+In addition to marking it as <code>#[naked]</code>, we also mark it <code>#[no_mangle]</code>.
+We need to use <code>#[instruction_set(arm::a32)]</code> as well.
+This is part of that arm/thumb thing from before.
+Because the BIOS jumps to the start of the ROM with the CPU in a32 mode, our function must be encoded appropriately.
+Since <code>_start</code> has got to specifically at the very start of the ROM we'll use <code>#[link_section = &quot;.text._start&quot;]</code> to assign our function a specific section name we can use in our linker script.
+Since <code>_start</code> is going to be &quot;called&quot; by the outside world we have to assign it the <code>extern &quot;C&quot;</code> ABI.
+Since it should never return we will mark the return type as <code>-&gt; !</code>.
+So far it all looks like this:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// ex1.rs
+
+#[naked]
+#[no_mangle]
+#[instruction_set(arm::a32)]
+#[link_section = &quot;.text._start&quot;]
+unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+  todo!()
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Inside of the <code>_start</code> function, because it's a naked function, we must put an <code>asm!</code> block as the only statement.
+Our assembly will be very simple for now.
+Let's look at it on its own.</p>
+<pre><code class="language-arm">b 1f
+.space 0xE0
+1:
+b 1b
+</code></pre>
+<p>In the first line we branch (<code>b</code>) to the label <code>1</code> that is &quot;forward&quot; from the instruction (<code>1f</code>).</p>
+<p>Then with <code>.space</code> we put 0xE0 blank bytes.
+This is called a &quot;directive&quot;, it doesn't emit an instruction directly, instead it tells the assembler to do a special action.
+We can tell it's a directive because it has a <code>.</code> at the beginning.
+The blank space is where the header data can go when we need to fill it in.
+mgba doesn't check the header, so during development it's fine to leave the header blank.
+We can always fix the header data after compilation using a special tool called <code>gbafix</code> when we need to.</p>
+<p>The <code>1:</code> is a label.
+We know it's a label because it ends with <code>:</code>.
+Unlike with function names, a label can be just a number.
+In fact, it's <em>preferred</em> to only use numberic labels whenever possible.
+When a non-numeric label is defined more than once it causes problems (that's why function names are mangled by default, and we had to use <code>no_mangle</code>).
+When a numeric label is defined more than once, all instances of that label can co-exist just fine.
+When you jump to a numbered label (forward or back), it just jumps to the closest instance of that number (in whichever direction).
+Note that a label <em>can</em> have something else on the same line following the <code>:</code>.
+Usually a label will be on a line of its own so that it stands out a little more in the code, but that's just a code style thing.
+Something can follow a label on the same line as well.
+If a label is on a line of its own, the label &quot;points to&quot; the next line that has a non-label thing on it.
+You can also have more than one label point at the same line, if necessary.</p>
+<p>Finally, our second actual instruction is that we want to branch backward to the label <code>1</code>.
+Since that <code>1</code> label points at the branch itself, this instruction causes an infinite loop.
+The same as if we'd written <code>loop {}</code> in rust.</p>
+<p>At the end of our assembly we have to put <code>options(noreturn)</code>.
+That's just part of how <code>#[naked]</code> functions work.
+So when we put it all together we get this:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// ex1.rs
+
+#[naked]
+#[no_mangle]
+#[link_section = &quot;.text._start&quot;]
+unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+  core::arch::asm! {
+    &quot;b 1f&quot;,
+    &quot;.space 0xE0&quot;,
+    &quot;1:&quot;,
+    &quot;b 1b&quot;,
+    options(noreturn)
+  }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>And we also want to adjust the linker script.
+Since <code>_start</code> is now in <code>.text._start</code>, we'll put a special matcher for that to make sure it stays at the start of the ROM, no matter what order the linker sees our files in.</p>
+<pre><code class="language-ld">/* normal_boot.ld */
+
+SECTIONS {
+  .text : {
+    *(.text._start);
+    *(.text .text.*);
+  } &gt;rom
+}
+</code></pre>
+<p>And after all of this, we can build our example and see that something shows up in the <code>.text</code> section of the executable.</p>
+<pre><code>&gt; cargo build --example ex1 &amp;&amp; arm-none-eabi-objdump target/thumbv4t-none-eabi/debug/examples/ex1 --section-headers
+   Compiling core v0.0.0 (C:\Users\Daniel\.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core)
+   Compiling rustc-std-workspace-core v1.99.0 (C:\Users\Daniel\.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\rustc-std-workspace-core)
+   Compiling compiler_builtins v0.1.89
+   Compiling gba_from_scratch v0.1.0 (D:\dev\gba-from-scratch)
+    Finished dev [unoptimized + debuginfo] target(s) in 9.98s
+
+target/thumbv4t-none-eabi/debug/examples/ex1:     file format elf32-littlearm
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000e6  08000000  08000000  00010000  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .ARM.exidx    00000010  080000e8  080000e8  000100e8  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .debug_abbrev 0000010a  00000000  00000000  000100f8  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  3 .debug_info   000005b7  00000000  00000000  00010202  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  4 .debug_aranges 00000028  00000000  00000000  000107b9  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  5 .debug_ranges 00000018  00000000  00000000  000107e1  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  6 .debug_str    0000049c  00000000  00000000  000107f9  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  7 .debug_pubnames 000000cb  00000000  00000000  00010c95  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  8 .debug_pubtypes 00000364  00000000  00000000  00010d60  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  9 .ARM.attributes 00000030  00000000  00000000  000110c4  2**0
+                  CONTENTS, READONLY
+ 10 .debug_frame  00000038  00000000  00000000  000110f4  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 11 .debug_line   00000056  00000000  00000000  0001112c  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 12 .comment      00000013  00000000  00000000  00011182  2**0
+                  CONTENTS, READONLY
+</code></pre>
+<p>I think we're ready to test the program.
+Obviously we just use <code>cargo run</code> and...</p>
+<pre><code>&gt; cargo run --example ex1
+    Finished dev [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target\thumbv4t-none-eabi\debug\examples\ex1`
+error: could not execute process `target\thumbv4t-none-eabi\debug\examples\ex1` (never executed)
+
+Caused by:
+  %1 is not a valid Win32 application. (os error 193)
+</code></pre>
+<p>Ah, right, Windows doesn't know how to run GBA programs, of course.</p>
+<p>Instead, let's adjust the <code>.cargo/config.toml</code> to set a &quot;runner&quot; value in our target confituration.
+When we have a runner set, <code>cargo run</code> will call the runner program and pass the program we picked as the first argument.</p>
+<pre><code class="language-toml"># .cargo/config.toml 
+
+[target.thumbv4t-none-eabi]
+rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+runner = &quot;mgba-qt&quot; #remove the -qt part if you're on Windows!
+</code></pre>
+<p>And so we try again</p>
+<pre><code>&gt; cargo run --example ex1
+    Finished dev [unoptimized + debuginfo] target(s) in 0.08s
+     Running `mgba-qt target\thumbv4t-none-eabi\debug\examples\ex1`
+</code></pre>
+<p>If everything is right so far, mGBA should launch and show a white screen.
+Congrats, it didn't crash.</p>
+<p>If we want to double check that our code is showing up in the executable properly we can even use <code>objdump</code> to check that.
+If we pass <code>--disassemble</code> we can get a printout of the assembly.
+There's a bunch of other options for how to configure that output too, so check the <code>--help</code> output to see what you can do.
+I like to use <code>--demangle --architecture=armv4t --no-show-raw-insn -Mreg-names-std</code>, and you get output like this:</p>
+<pre><code>&gt; arm-none-eabi-objdump target/thumbv4t-none-eabi/debug/examples/ex1 --disassemble --demangle --architecture=armv4t --no-show-raw-insn -Mreg-names-std
+
+target/thumbv4t-none-eabi/debug/examples/ex1:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+08000000 &lt;_start&gt;:
+ 8000000:       b       80000e4 &lt;_start+0xe4&gt;
+        ...
+ 80000e4:       b       80000e4 &lt;_start+0xe4&gt;
+ 80000e8:       udf     #65006  ; 0xfdee
+</code></pre>
+<p>Disassembly is a tricky thing sometimes.
+It's not always clear to the disassembler what is code and what's data.
+Or when it should decode <code>a32</code> code (4 bytes each) or <code>t32</code> code (2 bytes each).
+In this case, the disassembler did notice that enough bytes in a row are all zero, and it just cuts that from the output with a <code>...</code>.
+That's cool, but it doesn't <em>always</em> work.
+Every once in a while the disassembler will interpret things wrong and a chunk of the display will be nonsense.
+It's kinda just how it goes, try not to worry if you see it happen.</p>
+<p>Also, at the end of our function we can see there's an undefined instruction.
+Those will happen sometimes at the end functions.
+I'm unclear on why.
+It doesn't seem to be for alignment, because going 4 bytes past <code>0x0800_00E8</code> to <code>0x0800_00EC</code> would make things <em>less</em> aligned.
+It's not really a big deal when it happens.
+We've got so much ROM space available that an occasional 2 or 4 bytes extra won't break the bank.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>
