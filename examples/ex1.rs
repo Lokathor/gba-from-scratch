@@ -1,9 +1,18 @@
 #![no_std]
 #![no_main]
+#![feature(naked_functions)]
 
-fn main() {
-  unsafe {
-    (0x0400_0000 as *mut u16).write_volatile(0);
+#[naked]
+#[no_mangle]
+#[instruction_set(arm::a32)]
+#[link_section = ".text._start"]
+unsafe extern "C" fn _start() -> ! {
+  core::arch::asm! {
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "b 1b",
+    options(noreturn)
   }
 }
 
