@@ -719,5 +719,5 @@ Also, at the end of our function we can see there's an undefined instruction.
 Those will happen sometimes at the end functions.
 I'm unclear on why.
 It doesn't seem to be for alignment, because going 4 bytes past `0x0800_00E8` to `0x0800_00EC` would make things *less* aligned.
-It's not really a big deal when it happens.
-We've got so much ROM space available that an occasional 2 or 4 bytes extra won't break the bank.
+Still, I guess it's not really a big deal when it happens.
+We've got so much ROM space available that an occasional 2 or 4 bytes extra won't really break the bank.
