@@ -746,8 +746,63 @@ It's kinda just how it goes, try not to worry if you see it happen.</p>
 Those will happen sometimes at the end functions.
 I'm unclear on why.
 It doesn't seem to be for alignment, because going 4 bytes past <code>0x0800_00E8</code> to <code>0x0800_00EC</code> would make things <em>less</em> aligned.
-It's not really a big deal when it happens.
-We've got so much ROM space available that an occasional 2 or 4 bytes extra won't break the bank.</p>
+Still, I guess it's not really a big deal when it happens.
+We've got so much ROM space available that an occasional 2 or 4 bytes extra won't really break the bank.</p>
+<h2 id="proving-our-program-is-doing-something"><a class="header" href="#proving-our-program-is-doing-something">Proving Our Program Is Doing Something</a></h2>
+<p>It's all nice and well to see a white screen, but let's finish up this section by having our program do something, anything at all, which lets us see that we're really having an effect on the GBA.</p>
+<p>The simplest thing to do would be to make the screen turn on black instead of white.
+When the BIOS transfers control to our program a thing called the &quot;forced blank&quot; mode is active.
+This makes the display draw all pixels as white.
+If we turn off the forced blank bit we'll get a black screen instead.</p>
+<p>All we have to do is add a few more lines of assembly to our <code>_start</code> function:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in `main` of ex1.rs
+
+  core::arch::asm! {
+    &quot;b 1f&quot;,
+    &quot;.space 0xE0&quot;,
+    &quot;1:&quot;,
+    &quot;mov r0, #0x04000000&quot;,
+    &quot;mov r1, #0&quot;,
+    &quot;strh r1, [r0]&quot;,
+    &quot;2:&quot;,
+    &quot;b 2b&quot;,
+    options(noreturn)
+  }
+<span class="boring">}</span></code></pre></pre>
+<p>This part after the header data is what's new:</p>
+<pre><code class="language-arm">mov r0, #0x04000000
+mov r1, #0
+strh r1, [r0]
+</code></pre>
+<p><code>mov</code> will &quot;move&quot; a value into a register.
+This shares the usual assignment syntax of Rust and most other programming languages:
+the destination register is on the left,
+and the source data to move into that register is on the right.
+So you could think of it being <em>similar</em> to</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let r0 = 0x04000000;
+<span class="boring">}</span></code></pre></pre>
+<p>The <code>#</code> means that the value is an &quot;immediate&quot; value.
+It gets encoded into the instruction itself, so it doesn't have to &quot;come from&quot; anywhere else.
+With LLVM's assembler it seems like actually putting the <code>#</code> before an immediate value is optional (that is: the program will compile the same without it),
+but on some assemblers putting the <code>#</code> is required, so I'll be putting it in the tutorial code.</p>
+<p>After we move values into <code>r0</code> and <code>r1</code> we have a <code>strh</code>.
+This will &quot;store(half)&quot; the data in the first argument to the address in the second argument.
+In other words, it writes the lower 16 bits of the register to the address, as if the address was a <code>*mut u16</code>.
+The argument order for single loads and stores on ARM is that the address is always last, and in square brackets.
+The square brackets make it fairly easy to spot when skimming through a big pile of assembly.</p>
+<p>After doing that <code>strh</code> we have an &quot;empty loop&quot; like we had before, but just using the label <code>2</code> instead of <code>1</code> this time.</p>
+<p>And if we turn on the program...</p>
+<pre><code class="language-txt">cargo run --example ex1
+</code></pre>
+<p>Instead of a totally white screen, we'll see a totally black screen.
+We've had <em>some effect</em> on the GBA.</p>
+<p>Which is enough to call this article over.
+In the next article we'll actually learn more details about what we just did,
+as well as more details about how else we can affect the screen.</p>
 
                     </main>
 
