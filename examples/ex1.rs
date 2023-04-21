@@ -11,7 +11,11 @@ unsafe extern "C" fn _start() -> ! {
     "b 1f",
     ".space 0xE0",
     "1:",
-    "b 1b",
+    "mov r0, #0x04000000",
+    "mov r1, #0",
+    "strh r1, [r0]",
+    "2:",
+    "b 2b",
     options(noreturn)
   }
 }

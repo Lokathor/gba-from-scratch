@@ -721,3 +721,74 @@ I'm unclear on why.
 It doesn't seem to be for alignment, because going 4 bytes past `0x0800_00E8` to `0x0800_00EC` would make things *less* aligned.
 Still, I guess it's not really a big deal when it happens.
 We've got so much ROM space available that an occasional 2 or 4 bytes extra won't really break the bank.
+
+## Proving Our Program Is Doing Something
+
+It's all nice and well to see a white screen, but let's finish up this section by having our program do something, anything at all, which lets us see that we're really having an effect on the GBA.
+
+The simplest thing to do would be to make the screen turn on black instead of white.
+When the BIOS transfers control to our program a thing called the "forced blank" mode is active.
+This makes the display draw all pixels as white.
+If we turn off the forced blank bit we'll get a black screen instead.
+
+All we have to do is add a few more lines of assembly to our `_start` function:
+
+```rust
+// in `main` of ex1.rs
+
+  core::arch::asm! {
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "mov r0, #0x04000000",
+    "mov r1, #0",
+    "strh r1, [r0]",
+    "2:",
+    "b 2b",
+    options(noreturn)
+  }
+```
+
+This part after the header data is what's new:
+
+```arm
+mov r0, #0x04000000
+mov r1, #0
+strh r1, [r0]
+```
+
+`mov` will "move" a value into a register.
+This shares the usual assignment syntax of Rust and most other programming languages:
+the destination register is on the left,
+and the source data to move into that register is on the right.
+So you could think of it being *similar* to
+
+```rust
+let r0 = 0x04000000;
+```
+
+The `#` means that the value is an "immediate" value.
+It gets encoded into the instruction itself, so it doesn't have to "come from" anywhere else.
+With LLVM's assembler it seems like actually putting the `#` before an immediate value is optional (that is: the program will compile the same without it),
+but on some assemblers putting the `#` is required, so I'll be putting it in the tutorial code.
+
+After we move values into `r0` and `r1` we have a `strh`.
+This will "store(half)" the data in the first argument to the address in the second argument.
+In other words, it writes the lower 16 bits of the register to the address, as if the address was a `*mut u16`.
+The argument order for single loads and stores on ARM is that the address is always last, and in square brackets.
+The square brackets make it fairly easy to spot when skimming through a big pile of assembly.
+
+After doing that `strh` we have an "empty loop" like we had before, but just using the label `2` instead of `1` this time.
+
+And if we turn on the program...
+
+```txt
+cargo run --example ex1
+```
+
+Instead of a totally white screen, we'll see a totally black screen.
+We've had *some effect* on the GBA.
+
+Which is enough to call this article over.
+In the next article we'll actually learn more details about what we just did,
+as well as more details about how else we can affect the screen.
