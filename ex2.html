@@ -1,0 +1,796 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>User Input - GBA From Scratch With Ferris</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Open Graph tags-->
+        <meta name="og:site_name" content="GBA From Scratch With Ferris" />
+        <meta name="og:title" content="User Input" />
+        <meta name="og:description" content="" />
+        
+        <!-- Twitter meta tags -->
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@lokathor" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="ex1.html"><strong aria-hidden="true">1.</strong> A Basic Executable</a></li><li class="chapter-item expanded "><a href="ex2.html" class="active"><strong aria-hidden="true">2.</strong> User Input</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">GBA From Scratch With Ferris</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/Lokathor/gba-from-scratch" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="user-input"><a class="header" href="#user-input">User Input</a></h1>
+<p>So far we can build a program that shows a white screen, or a program that shows a black screen.
+As fascinating as this is, we can't even make the program switch from white to black while it's running.
+That will be our goal for this part.</p>
+<p>For this article we'll be mostly working on a new example: <code>ex2.rs</code></p>
+<h2 id="memory-mapped-inputoutput-mmio"><a class="header" href="#memory-mapped-inputoutput-mmio">Memory Mapped Input/Output (MMIO)</a></h2>
+<p>At the end of the last article I told you to put a mysterious bit of assembly into the program</p>
+<pre><code class="language-arm">mov r0, #0x04000000
+mov r1, #0
+strh r1, [r0]
+</code></pre>
+<p>This &quot;resets the forced blank bit&quot;, and that lets the display show the normal picture instead of all white.
+At the moment our normal picture is all black, but soon it will be something else.</p>
+<p>What's happening is called Memory Mapped Input/Output, or Memory Mapped IO, or even just MMIO.</p>
+<p>The CPU only knows how to do math and access memory.
+What &quot;accessing memory&quot; actually means is that a signal goes along a &quot;bus&quot;.
+The signal can be pushed out to other hardware (&quot;store&quot;), or be pulled in from the other hardware (&quot;load&quot;).
+When the signal's address points a memory device it's how we store data for later.
+There's also other types of device too, things that don't just store data.
+When the signal goes there, &quot;other stuff&quot; happens.</p>
+<p>The address <code>0x04000000</code> connects to a part of the display system called the Display Control.
+When we set the display control's bits to <code>0_u16</code> with our <code>strh</code> instruction, that includes the forced blank bit.
+There's other bits too, which we'll get to soon.</p>
+<p>All of the GBA's hardware is controlled via MMIO,
+so most of this series will involve explaining MMIO address values and the correct way to set ths bits at each address.</p>
+<p>Note that an MMIO address is <em>not</em> like normal memory:</p>
+<ul>
+<li>Sometimes an address will be read-only (writes are totally ignored) or write-only (reading produces garbage data).</li>
+<li>Sometimes an address will allow both reads and writes, but what you read back will be something else from what you last wrote.</li>
+<li>This is <em>not</em> the case with any of the GBA's MMIO, but on some other devices (eg: the NES) reading an MMIO location can be &quot;destructive&quot;, changing the value just by reading it.</li>
+</ul>
+<h2 id="volatile-memory-access"><a class="header" href="#volatile-memory-access">Volatile Memory Access</a></h2>
+<p>Normally the compiler will try to keep memory accesses to a minimum.
+If it sees you read an address twice without a write in between, it'll (usually) only do the read once.
+If you write to an address twice without a read in between it'll (usually) skip the first read.
+It's simple stuff, but it makes programs fast, and we want our programs fast.</p>
+<p>However, when working with MMIO every single memory access has to happen <em>exactly</em> as we write it in our program.
+If we're (for example) reading the address for the button data then <em>of course</em> we'd read it over and over without ever doing a write.
+But we still need every single read to actually happen so we can get the newest button data.</p>
+<p>To tell the compiler this, we use a &quot;volatile&quot; load or store instead of a normal load or store.
+This is done with the <a href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html#method.read_volatile">read_volatile</a> and <a href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html#method.write_volatile">write_volatile</a> pointer methods.
+But those are <code>unsafe</code> methods because the compiler naturally doesn't know if, for any given pointer, it's safe to just read or write some data.
+Pointers can come from anywhere, they might be dangling, etc etc, all the normal problems with raw pointers.</p>
+<p>Instead, we'll use the <a href="https://docs.rs/voladdress">voladdress</a> crate.
+It's got some alternatives to just raw points that ease the volatile usage quite a bit.
+I made it specifically to power the <code>gba</code> crate's MMIO, so we can be <em>fairly confident</em> that it'll be useful for writing GBA programs.</p>
+<pre><code>&gt; cargo add voladdress
+    Updating crates.io index
+      Adding voladdress v1.3.0 to dependencies.
+</code></pre>
+<p>Now in our <code>lib.rs</code> we can declare <code>DISPCNT</code>.
+That's the short name that <a href="https://problemkaputt.de/gbatek.htm">GBATEK</a> (the main GBA homebrew manual) and mGBA use for the display control.
+In Rust terms it's a <a href="https://docs.rs/voladdress/latest/voladdress/struct.VolAddress.html">VolAddress</a> for a <code>u16</code> value.
+It's safe to read or write, and it's located at <code>0x0400_0000</code> like we saw before.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use voladdress::{Safe, VolAddress};
+
+pub const DISPCNT: VolAddress&lt;u16, Safe, Safe&gt; =
+  unsafe { VolAddress::new(0x0400_0000) };
+<span class="boring">}</span></code></pre></pre>
+<p>Now we can adjust the display control within Rust.
+Neato.</p>
+<h2 id="moving-_start-into-the-library"><a class="header" href="#moving-_start-into-the-library">Moving <code>_start</code> Into The Library</a></h2>
+<p>When we made <code>ex1.rs</code> we put the <code>_start</code> function directly into the example file.
+That's not a great long term plan.
+We want to have a <code>_start</code> function that just does the correct startup &quot;in the background&quot;, automatically.
+We don't want to be thinking about it again with each new example we make.</p>
+<p>So first let's copy the <code>_start</code> function into <code>lib.rs</code>.
+This will require us to put <code>#![feature(naked_functions)]</code> at the top of <code>lib.rs</code>.
+Again, we <em>could</em> use global assembly instead, but I think that global assembly is just a little worse than naked functions, and we're already on Nightly.</p>
+<p>Now all of our examples moving forward will have the <code>_start</code> function (assuming they link in our library).
+That's fine, except that right now <code>_start</code> doesn't have a way to call any function in our executable.</p>
+<p>We're gonna rewrite <code>_start</code> to do whatever startup it needs and <em>then</em> we'll have it call another function.
+If we pick an un-mangled name for the function that <code>_start</code> calls each executable we make will be able to make a function with that name and the linker will weave it all together just fine.
+Since it's the conventional &quot;beginning of the program&quot; name let's use <code>main</code>.</p>
+<p>First we update <code>_start</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+#[naked]
+#[no_mangle]
+#[instruction_set(arm::a32)]
+#[link_section = &quot;.text._start&quot;]
+unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+  core::arch::asm! {
+    &quot;b 1f&quot;,
+    &quot;.space 0xE0&quot;,
+    &quot;1:&quot;,
+    &quot;ldr r12, =main&quot;,
+    &quot;bx r12&quot;,
+    options(noreturn)
+  }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Our new assembly is this part:</p>
+<pre><code class="language-arm">ldr r12, =main
+bx r12
+</code></pre>
+<p>The first line, <code>ldr &lt;reg&gt;, =symbol</code>, is a special &quot;pseudo instruction&quot;.
+It looks like an instruction, but what the assembler actually outputs is a slight variation.
+What will happen is that the assembler will insert a load operation for an address relative to this instruction, and then at that relative address the assembler will also insert the address of <code>main</code> itself.
+This way we don't have to know where <code>main</code> is.
+In fact we don't even have to have defined <code>main</code> at all.
+That's good, because our library won't define <code>main</code> anyway.
+As long as the final executable defines <code>main</code> <em>somewhere</em> the linker will patch it all together.</p>
+<p>The second line <code>bx &lt;reg&gt;</code> is a &quot;branch-exchange&quot;.
+This is a special kind of branch that we have to use with ARMv4T when we want to switch between ARM code (a32) and Thumb code (t32).
+It switches to the correct code mode as part of the jumping the program's execution to the new address.
+The <code>_start</code> function <em>must</em> be written in a32 code, but most of the rest of the program, including <code>main</code>, could be written in either code type.
+Since <code>main</code> might be a different code type from <code>_start</code> we use <code>bx</code> instead of the basic <code>b</code> instruction we've been using previously.
+(note: there's a third type of branch on the GBA called <code>bl</code>, which we'll see eventually).</p>
+<p>While <code>b</code> instruction jumped to a <em>label</em>, <code>bx</code> jumps to a <em>register</em>.
+That's why we have to load <code>main</code> into <code>r12</code> before we can use <code>bx</code>.
+I picked <code>r12</code> in this case just because the convention is that it's a &quot;scratch&quot; register.
+With the C ABI the caller will never pass data through <code>r12</code>, and functions are allowed to modify <code>r12</code> without restoring the value before they return.</p>
+<p>That's all that <code>_start</code> has to do for now.
+Later it will have some setup work to do before calling <code>main</code>, but not yet.</p>
+<h2 id="adding-main-to-ex2rs"><a class="header" href="#adding-main-to-ex2rs">Adding <code>main</code> To <code>ex2.rs</code></a></h2>
+<p>Now in <code>ex2.rs</code> we need to have a <code>main</code> function that's <code>no_mangle</code>, <code>extern &quot;C&quot;</code>, and that doesn't ever return.</p>
+<p>To begin, we'll make the actual body of <code>main</code> just do what we were doing before.
+First write 0 to <code>DISPCNT</code>, and then do a <code>loop</code> forever.</p>
+<pre><pre class="playground"><code class="language-rust">// ex2.rs
+#![no_std]
+#![no_main]
+
+use gba_from_scratch::DISPCNT;
+
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  DISPCNT.write(0);
+  loop {}
+}
+
+#[panic_handler]
+fn panic_handler(_: &amp;core::panic::PanicInfo) -&gt; ! {
+  loop {}
+}</code></pre></pre>
+<p>And if we run this in mGBA with <code>cargo run --example ex2</code> we see... actually we see a mostly black screen but with a white line on it.</p>
+<p><img src="ex2-white-line.png" alt="ex2_white_line" /></p>
+<p>That's... not what we expected?
+That's not either of the types of screen that we got before.
+Here's where things get kinda weird.
+If we run our program in <code>--release</code> mode we <em>don't</em> see the line.</p>
+<p>Let's look at the output of the compiler again with <code>objdump</code>.
+In fact, now that we've got more than one example let's have a script to store that &quot;use objdump&quot; stuff.
+I'm gonna make a <code>dump.bat</code>, but you can make <code>dump.sh</code> if you're on Mac or Linux.
+It's just a few plain commands, no special scripting.</p>
+<pre><code class="language-bat">cargo build --examples
+
+arm-none-eabi-objdump target/thumbv4t-none-eabi/debug/examples/ex1 --section-headers --disassemble --demangle --architecture=armv4t --no-show-raw-insn -Mreg-names-std &gt;target/ex1.txt
+
+arm-none-eabi-objdump target/thumbv4t-none-eabi/debug/examples/ex2 --section-headers --disassemble --demangle --architecture=armv4t --no-show-raw-insn -Mreg-names-std &gt;target/ex2.txt
+</code></pre>
+<p>Okay, and the <code>target/ex1.txt</code> file has about what we expect in it. A bunch of sections like we saw before and then.</p>
+<pre><code class="language-txt">Disassembly of section .text:
+
+08000000 &lt;_start&gt;:
+ 8000000:	b	80000e4 &lt;_start+0xe4&gt;
+	...
+ 80000e4:	mov	r0, #67108864	; 0x4000000
+ 80000e8:	mov	r1, #0
+ 80000ec:	strh	r1, [r0]
+ 80000f0:	b	80000f0 &lt;_start+0xf0&gt;
+ 80000f4:	udf	#65006	; 0xfdee
+</code></pre>
+<p>Yep, just what we expected.</p>
+<p>Let's see what's in <code>target/ex2.txt</code>, same basic thing, right?
+Ah, wait, well there's 29 sections instead of 12.
+That's probably fine, more debug info or something, probably?
+Won't affect our code, I'm sure.</p>
+<pre><code class="language-txt">Disassembly of section .text:
+
+08000000 &lt;_start&gt;:
+ 8000000:	b	80000e4 &lt;_start+0xe4&gt;
+	...
+ 80000e4:	ldr	r12, [pc, #4]	; 80000f0 &lt;_start+0xf0&gt;
+ 80000e8:	bx	r12
+ 80000ec:	udf	#65006	; 0xfdee
+ 80000f0:	.word	0x08000115
+</code></pre>
+<p>Sure, what we expected...</p>
+<pre><code class="language-txt">080000f4 &lt;voladdress::voladdress_::VolAddress&lt;T,R,voladdress::Safe&gt;::write&gt;:
+ 80000f4:	push	{r7, lr}
+ 80000f6:	sub	sp, #16
+ 80000f8:	str	r1, [sp, #4]
+ 80000fa:	str	r0, [sp, #8]
+ 80000fc:	add	r2, sp, #12
+ 80000fe:	strh	r1, [r2, #0]
+ 8000100:	bl	8000178 &lt;core::num::nonzero::NonZeroUsize::get&gt;
+ 8000104:	ldr	r1, [sp, #4]
+ 8000106:	bl	800012c &lt;core::ptr::write_volatile&gt;
+ 800010a:	add	sp, #16
+ 800010c:	pop	{r7}
+ 800010e:	pop	{r0}
+ 8000110:	mov	lr, r0
+ 8000112:	bx	lr
+</code></pre>
+<p>Oops.. that's... not a good way to write to a pointer.</p>
+<pre><code class="language-txt">08000114 &lt;main&gt;:
+ 8000114:	movs	r0, #1
+ 8000116:	lsls	r0, r0, #26
+ 8000118:	movs	r1, #0
+ 800011a:	bl	80000f4 &lt;voladdress::voladdress_::VolAddress&lt;T,R,voladdress::Safe&gt;::write&gt;
+ 800011e:	b.n	8000120 &lt;main+0xc&gt;
+ 8000120:	b.n	8000120 &lt;main+0xc&gt;
+</code></pre>
+<p>Oh?</p>
+<pre><code class="language-txt">08000122 &lt;rust_begin_unwind&gt;:
+ 8000122:	sub	sp, #4
+ 8000124:	str	r0, [sp, #0]
+ 8000126:	b.n	8000128 &lt;rust_begin_unwind+0x6&gt;
+ 8000128:	b.n	8000128 &lt;rust_begin_unwind+0x6&gt;
+ 800012a:	bmi.n	80000d6 &lt;_start+0xd6&gt;
+</code></pre>
+<p>Okay that one seems okay, I think?</p>
+<pre><code class="language-txt">0800012c &lt;core::ptr::write_volatile&gt;:
+ 800012c:	push	{r7, lr}
+ 800012e:	sub	sp, #24
+ 8000130:	str	r0, [sp, #0]
+ 8000132:	movs	r2, r1
+ 8000134:	str	r2, [sp, #4]
+ 8000136:	str	r0, [sp, #12]
+ 8000138:	add	r0, sp, #16
+ 800013a:	strh	r1, [r0, #0]
+ 800013c:	movs	r0, #1
+ 800013e:	cmp	r0, #0
+ 8000140:	bne.n	8000154 &lt;core::ptr::write_volatile+0x28&gt;
+ 8000142:	b.n	8000144 &lt;core::ptr::write_volatile+0x18&gt;
+ 8000144:	ldr	r0, [sp, #4]
+ 8000146:	ldr	r1, [sp, #0]
+ 8000148:	strh	r0, [r1, #0]
+ 800014a:	add	sp, #24
+ 800014c:	pop	{r7}
+ 800014e:	pop	{r0}
+ 8000150:	mov	lr, r0
+ 8000152:	bx	lr
+ 8000154:	ldr	r0, [sp, #0]
+ 8000156:	str	r0, [sp, #8]
+ 8000158:	ldr	r0, [sp, #8]
+ 800015a:	str	r0, [sp, #20]
+ 800015c:	bl	8000180 &lt;core::intrinsics::is_aligned_and_not_null&gt;
+ 8000160:	cmp	r0, #0
+ 8000162:	bne.n	8000170 &lt;core::ptr::write_volatile+0x44&gt;
+ 8000164:	b.n	8000166 &lt;core::ptr::write_volatile+0x3a&gt;
+ 8000166:	ldr	r0, [pc, #12]	; (8000174 &lt;core::ptr::write_volatile+0x48&gt;)
+ 8000168:	movs	r1, #111	; 0x6f
+ 800016a:	bl	80002fc &lt;core::panicking::panic_nounwind&gt;
+ 800016e:	udf	#254	; 0xfe
+ 8000170:	b.n	8000144 &lt;core::ptr::write_volatile+0x18&gt;
+ 8000172:	nop			; (mov r8, r8)
+ 8000174:	.word	0x08000440
+</code></pre>
+<p>Oh... uh... oh no.
+And there's more.
+It goes on and on, but I think you get the joke at this point.</p>
+<p>Yeah, <code>rustc</code> outputs <em>utter garbage</em> code without optimizations enabled.
+Just, atrocious.
+The only reason it's usable at all on your desktop is because modern computers are so fast.</p>
+<p>Our best bet is to just turn on full optimizations for the debug profile.
+This can be done in <code>Cargo.toml</code>.
+In a new <code>profile.dev</code> section we set the <code>opt-level</code> to 3.</p>
+<pre><code class="language-toml">[profile.dev]
+opt-level = 3
+</code></pre>
+<p>And rebuild / redump the program:</p>
+<pre><code class="language-txt">Disassembly of section .text:
+
+08000000 &lt;_start&gt;:
+ 8000000:	b	80000e4 &lt;_start+0xe4&gt;
+	...
+ 80000e4:	ldr	r12, [pc, #4]	; 80000f0 &lt;_start+0xf0&gt;
+ 80000e8:	bx	r12
+ 80000ec:	udf	#65006	; 0xfdee
+ 80000f0:	.word	0x080000f5
+
+080000f4 &lt;main&gt;:
+ 80000f4:	movs	r0, #1
+ 80000f6:	lsls	r0, r0, #26
+ 80000f8:	movs	r1, #0
+ 80000fa:	strh	r1, [r0, #0]
+ 80000fc:	b.n	80000fc &lt;main+0x8&gt;
+</code></pre>
+<p>That's it, that's our whole program once optimizations have been applied.
+Now we don't get the white line.</p>
+<p>Why did we get it before?
+I don't know exactly.
+Our <code>ex2</code> program &quot;stops&quot; on an infinite loop that's just as fast as the <code>ex1</code> version, even if it takes longer to get there.
+I'd have thought that it wouldn't make a difference, but somehow it does.
+Emulators are weird like that sometimes.</p>
+<p>Oh, and speaking of weird stuff, while we're adjusting build configuration things, I found out about that undefined instruction thing.
+Our good friend Scott wrote in (so to speak) and suggested trying <code>-Ztrap-unreachable=no</code> in RUSTFLAGS.</p>
+<p>So we just add it in the <code>.cargo/config.toml</code>:</p>
+<pre><code class="language-toml">[target.thumbv4t-none-eabi]
+rustflags = [&quot;-Ztrap-unreachable=no&quot;, &quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+runner = &quot;mgba-qt&quot;
+</code></pre>
+<p>and rebuild / redump again...</p>
+<pre><code class="language-txt">Disassembly of section .text:
+
+08000000 &lt;_start&gt;:
+ 8000000:	b	80000e4 &lt;_start+0xe4&gt;
+	...
+ 80000e4:	ldr	r12, [pc]	; 80000ec &lt;_start+0xec&gt;
+ 80000e8:	bx	r12
+ 80000ec:	.word	0x080000f1
+
+080000f0 &lt;main&gt;:
+ 80000f0:	movs	r0, #1
+ 80000f2:	lsls	r0, r0, #26
+ 80000f4:	movs	r1, #0
+ 80000f6:	strh	r1, [r0, #0]
+ 80000f8:	b.n	80000f8 &lt;main+0x8&gt;
+</code></pre>
+<p>The undefined instruction is gone!
+Magical!
+I guess the explanation is that LLVM is trying to add in a &quot;guard&quot; against code accidentally flowing past the end of the function.
+When the CPU is made to execute and undefined instruction it causes a special kind of &quot;interrupt&quot; to happen.
+We'll mostly talk about interrupts later, but for now let's just say that what LLVM is <em>expecting</em> is that the Operating System will handle the interrupt by killing the program (the undefined instruction &quot;traps&quot; your program).
+We don't really have an OS on the GBA, we <em>are</em> the OS you might say.
+Regardless of what you call it, that undefined instruction won't &quot;trap&quot; like LLVM thinks it will.
+The undefined interrupt handler in the BIOS just returns and the device just keeps executing.
+So that undefined instruction is purely a waste of space to us.</p>
+<p>We might as well leave <code>-Ztrap-unreachable=no</code> set in our configuration.
+The <code>-Z</code> part means that it's a Nightly flag, but we're on Nightly for other stuff already so it's fine.
+If we have to be on Nightly for <code>build-std</code>, we might as well take advantage of the other extra flags we can.</p>
+<h2 id="more-assembly-details"><a class="header" href="#more-assembly-details">More Assembly Details</a></h2>
+<p>Let's quickly take another close look at our two functions so far.</p>
+<p>First is <code>_start</code></p>
+<pre><code class="language-arm">08000000 &lt;_start&gt;:
+ 8000000:	b	80000e4 &lt;_start+0xe4&gt;
+	...
+ 80000e4:	ldr	r12, [pc]	; 80000ec &lt;_start+0xec&gt;
+ 80000e8:	bx	r12
+ 80000ec:	.word	0x080000f1
+</code></pre>
+<p>So the <code>ldr r12, =main</code> has become <code>ldr	r12, [pc]</code>.
+The <code>pc</code> register is the &quot;program counter&quot;.
+That's storing the next address for the CPU to read and start doing an instruction.
+The ARM7TDMI has a 3 stage CPU pipeline: Fetch, Decode, Execute.
+The <code>pc</code> register will always be pointing <em>two instructions</em> ahead of what instruction is actually executing.
+So by the time we're executing the <code>ldr</code>, the <code>pc</code> register is two instructions ahead on <code>.word	0x080000f1</code>.
+The <code>.word</code> directive inserts a literal 4 byte value, in this case <code>0x080000f1</code>.
+That's the address of <code>main</code>, +1.
+The +1 part makes the address odd, which is how <code>bx</code> will know what code state to switch to.</p>
+<p>So after we load an address into <code>r12</code>, we use <code>bx</code> to branch-exchange to that address.
+The &quot;exchange&quot; part is because there's a register called the &quot;current program status register&quot;.
+This register holds several bit flags about the program's current status.
+Importantly it has a T flag, which says if the CPU is running in thumb state or not.
+A branch-exchange will &quot;exchange&quot; the lowest bit in the register holding the target address with the current value of the T flag.</p>
+<ul>
+<li>If the target address is odd then the T flag becomes set (the program will run as thumb code).</li>
+<li>If the target address is even then the T flag becomes cleared (the program will run as arm code).</li>
+</ul>
+<p>And I know it's an &quot;exchange&quot;, but the <em>previous</em> T value basically goes nowhere.
+They just call it an exchange to give it a fancy name, I guess.</p>
+<p>I hope that wasn't too much.
+If not, don't worry.
+It's not essential to understand the full details right away if you want to just keep going.</p>
+<p>Let's look over at <code>main</code>.</p>
+<pre><code class="language-arm">080000f0 &lt;main&gt;:
+ 80000f0:	movs	r0, #1
+ 80000f2:	lsls	r0, r0, #26
+ 80000f4:	movs	r1, #0
+ 80000f6:	strh	r1, [r0, #0]
+ 80000f8:	b.n	80000f8 &lt;main+0x8&gt;
+</code></pre>
+<p>Ah, here's something interesting.
+Instead of <code>mov</code> we're doing <code>movs</code>, and instead of <code>lsl</code> (logical shift left) we're doing <code>lsls</code>.
+When an instruction ends with <code>s</code> then it &quot;sets the status flags&quot;.</p>
+<ul>
+<li><code>_start</code> is ARM code, and most all ARM instructions can choose to set the flags or not. We haven't set the status flags in our small amount of code so far.</li>
+<li><code>main</code> is thumb code, and most all thumb instructions are forced to set the flags. This constraints how much you can reorder your instructions. Each operation that sets flags you care about has to come <em>just before</em> whatever the thing using those flags is.</li>
+</ul>
+<p>But let's notice something else.
+We can see the addresses of each instruction, and in <code>_start</code> we can see each instruction is 4 bytes.
+With <code>main</code> we can see that each instruction is just 2 bytes.
+This is the advantage of using thumb code.
+The program is significantly smaller.</p>
+<p>In fact, the CPU has to access ROM over a 16-bit bus.
+This means that if the CPU needs a 32-bit value (such as an ARM instruction) then it needs to do two reads in a row to get the complete data.
+This means that when running programs out of ROM they actually run slower if they're ARM code.
+The CPU will have to wait over and over as it tries to get each complete instruction just half an instruction at a time.
+This is why we're having the default encoding for our program be thumb code.</p>
+<p>Also, the way to get <code>0x0400_0000</code> into a register has changed:</p>
+<ul>
+<li>With ARM code we can <code>mov</code> the value directly as one instruction.</li>
+<li>With thumb code we have to <code>movs</code> a 1 and then as a separate step we left shift it by 26 bits to get the right value.</li>
+</ul>
+<p>What's happening is that the ARM <code>mov</code> instruction <em>doesn't</em> encode the full litearal <code>0x0400_0000</code> within the instruction.
+It's only a 32 bit instruction, so it can't store a 32 bit value and <em>also</em> the bits to declare <code>mov</code>.
+Instead, it stores <code>mov</code> and a compressed form of the data: <code>1&lt;&lt;26</code>.
+But thumb code is only 16 bits, so it can't even store that much.
+Since each thumb instruction is only 2 bytes instead of 4, there's less bits to fit immediate values and do instruction variations and such.
+This means that in a lot of cases an operation that's one ARM instruction will be more than one thumb instruction.
+Because of this, thumb code vs ARM code is <em>not</em> as simple as &quot;your program is half as big&quot;.
+You get a significant savings on average, but the exact ratio depends on the program</p>
+<p>We can see the disassembler is showing our <code>strh</code> as <code>strh	r1, [r0, #0]</code>.
+This is saying &quot;<code>r0</code> plus 0&quot;.
+Actually any store or load can be &quot;plus some immediate value&quot;, but when the modifier is plus 0 we don't need to write it.
+In this case, the disassembler is just being a little silly in how it prints things.</p>
+<p>Also, when we see <code>b.n	80000f8</code>, this <code>b.n</code> means &quot;branch instruction with narrow encoding&quot;.
+The explanation here is that in later versions of ARM there was a &quot;thumb 2&quot; introduced.
+In thumb 2, some instructions will be encoded as one opcode (each of which is two bytes), but then other uses will be two opcodes.
+The <code>.n</code> is the &quot;narrow&quot; encoding, meaning it's the one opcode version.
+On the GBA we don't use thumb2 at all, but since the <code>objdump</code> program is designed to work with all versions of ARM it just prints this way.</p>
+<h2 id="the-backdrop-color"><a class="header" href="#the-backdrop-color">The Backdrop Color</a></h2>
+<p>The &quot;backdrop&quot; color is the color that's shown in a pixel if no background layer or object is visible in that pixel.
+Right now when we turn off forced blank we see a black screen because the backdrop color is black.
+If we were to change the backdrop color we'd see the whole screen filled with some other color.</p>
+<p>First let's declare an MMIO for the backdrop color.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+pub const BACKDROP: VolAddress&lt;u16, Safe, Safe&gt; =
+  unsafe { VolAddress::new(0x0500_0000) };
+<span class="boring">}</span></code></pre></pre>
+<p>Now let's update <code>ex2.rs</code> so that we set the backdrop color before we turn off forced blank.</p>
+<pre><pre class="playground"><code class="language-rust">// in ex2.rs
+use gba_from_scratch::{BACKDROP, DISPCNT};
+
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  BACKDROP.write(0b11111);
+  DISPCNT.write(0);
+  loop {}
+}</code></pre></pre>
+<p>Let's look at that assembly:</p>
+<pre><code class="language-arm">080000f0 &lt;main&gt;:
+ 80000f0:	movs	r0, #5
+ 80000f2:	lsls	r0, r0, #24
+ 80000f4:	movs	r1, #31
+ 80000f6:	strh	r1, [r0, #0]
+ 80000f8:	movs	r0, #1
+ 80000fa:	lsls	r0, r0, #26
+ 80000fc:	movs	r1, #0
+ 80000fe:	strh	r1, [r0, #0]
+ 8000100:	b.n	8000100 &lt;main+0x10&gt;
+</code></pre>
+<p>So first it gets the <code>BACKDROP</code> address in a register (5&lt;&lt;24), then the color value (31), then writes that, and the rest of the program is like we've seen before.
+Makes sense.</p>
+<p>We <em>could</em> also change the backdrop color after turning off forced blank if we wanted to.
+However, by default it's best practice to only adjust the display when forced blank is on or when you know it's the vertical blank period.
+Otherwise you can get accidental display artifacts on the screen.</p>
+<p>If we run the program now we'll see a red screen.</p>
+<p>The magic looking <code>0b11111</code> value is because the GBA has 5-bit per channel color.
+A GBA color value is a <code>u16</code> with the channels going from low to high:</p>
+<pre><code>0bX_BBBBB_GGGGG_RRRRR
+</code></pre>
+<p>So <code>0b11111</code> is &quot;full red, no green or blue&quot;.</p>
+<p>Using a raw <code>u16</code> isn't that great.
+We'd probably like to have a little bit more meaning to the type so that it's clearer what's going on.
+We can put names on our functions and magic values, things like that.</p>
+<p>If we replace the <code>u16</code> in <code>BACKDROP</code> with a <code>repr(transparent)</code> wrapper type over an actual <code>u16</code> then things will be a lot better.
+This is called using a &quot;newtype&quot;, and we'll be doing it a lot.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+pub const BACKDROP: VolAddress&lt;Color, Safe, Safe&gt; =
+  unsafe { VolAddress::new(0x0500_0000) };
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct Color(pub u16);
+impl Color {
+  pub const RED: Self = Self::rgb(31, 0, 0);
+
+  #[inline]
+  #[must_use]
+  pub const fn rgb(r: u16, g: u16, b: u16) -&gt; Self {
+    Self(r | (g &lt;&lt; 5) | (b &lt;&lt; 10))
+  }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Then we change <code>ex2.rs</code> to use our new Color type.</p>
+<pre><pre class="playground"><code class="language-rust">use gba_from_scratch::{Color, BACKDROP, DISPCNT};
+
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  BACKDROP.write(Color::RED);
+  DISPCNT.write(0);
+  loop {}
+}</code></pre></pre>
+<p>Practically self-documenting code at this point!</p>
+<p>If we run the program again we can see a red screen too.
+Let's double check our assembly to make sure we didn't kill performance somehow.</p>
+<pre><code class="language-arm">080000f0 &lt;main&gt;:
+ 80000f0:	movs	r0, #5
+ 80000f2:	lsls	r0, r0, #24
+ 80000f4:	movs	r1, #31
+ 80000f6:	strh	r1, [r0, #0]
+ 80000f8:	movs	r0, #1
+ 80000fa:	lsls	r0, r0, #26
+ 80000fc:	movs	r1, #0
+ 80000fe:	strh	r1, [r0, #0]
+ 8000100:	b.n	8000100 &lt;main+0x10&gt;
+</code></pre>
+<p>Hey it's the <em>exact</em> same as before.
+We've got a zero-runtime-cost abstraction, the promise of Rust is real!</p>
+<h2 id="reading-the-buttons"><a class="header" href="#reading-the-buttons">Reading The Buttons</a></h2>
+<p>Fun as it is to have a single static color, that's still not very exciting.</p>
+<p>We can read the current state of the keys from the <code>KEYINPUT</code> control.
+This includes both the &quot;buttons&quot; as well as the direction-pad value.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+pub const KEYINPUT: VolAddress&lt;u16, Safe, ()&gt; =
+  unsafe { VolAddress::new(0x400_0130) };
+<span class="boring">}</span></code></pre></pre>
+<p>Note that instead of <code>Safe</code> as the write type we've put <code>()</code> instead.
+The key data is naturally write only.
+The CPU can't just tell the GBA to make a button be pressed or not.</p>
+<p>With this new MMIO we can show a color based on the keys:</p>
+<pre><pre class="playground"><code class="language-rust">// in ex2.rs
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  DISPCNT.write(0);
+  loop {
+    let k = KEYINPUT.read();
+    BACKDROP.write(Color(k));
+  }
+}</code></pre></pre>
+<p>Now if we run the program and press different keys we'll see the color change.</p>
+<p>Each bits of <code>KEYINPUT</code> that's connected to a key will be 0 when the key is pressed and 1 when the key is released.
+Bits not connected to a key will always just be 0.
+Which key controls which bit is as follows:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Bit</th><th style="text-align: left">Key</th></tr></thead><tbody>
+<tr><td style="text-align: center">0</td><td style="text-align: left">A</td></tr>
+<tr><td style="text-align: center">1</td><td style="text-align: left">B</td></tr>
+<tr><td style="text-align: center">2</td><td style="text-align: left">Select</td></tr>
+<tr><td style="text-align: center">3</td><td style="text-align: left">Start</td></tr>
+<tr><td style="text-align: center">4</td><td style="text-align: left">Right</td></tr>
+<tr><td style="text-align: center">5</td><td style="text-align: left">Left</td></tr>
+<tr><td style="text-align: center">6</td><td style="text-align: left">Up</td></tr>
+<tr><td style="text-align: center">7</td><td style="text-align: left">Down</td></tr>
+<tr><td style="text-align: center">8</td><td style="text-align: left">R</td></tr>
+<tr><td style="text-align: center">9</td><td style="text-align: left">L</td></tr>
+</tbody></table>
+</div>
+<p>Like with the color data, we probably want to make a newtype for all this.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+pub const KEYINPUT: VolAddress&lt;KeyInput, Safe, ()&gt; =
+  unsafe { VolAddress::new(0x400_0130) };
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct KeyInput(pub u16);
+#[rustfmt::skip]
+impl KeyInput {
+  #[inline]
+  pub const fn a(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;0)) == 0 }
+  #[inline]
+  pub const fn b(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;1)) == 0 }
+  #[inline]
+  pub const fn select(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;2)) == 0 }
+  #[inline]
+  pub const fn start(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;3)) == 0 }
+  #[inline]
+  pub const fn right(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;4)) == 0 }
+  #[inline]
+  pub const fn left(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;5)) == 0 }
+  #[inline]
+  pub const fn up(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;6)) == 0 }
+  #[inline]
+  pub const fn down(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;7)) == 0 }
+  #[inline]
+  pub const fn r(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;8)) == 0 }
+  #[inline]
+  pub const fn l(self) -&gt; bool { (self.0 &amp; (1&lt;&lt;9)) == 0 }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>(This is kinda begging for a <code>macro_rules!</code>, but it's basically fine to put that off until later.)</p>
+<p>Also let's add a definition for <code>GREEN</code> on our color type.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Color {
+  pub const RED: Self = Self::rgb(31, 0, 0);
+  pub const GREEN: Self = Self::rgb(0, 31, 0);
+  // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Now we can read the keys, and set the color to red or green based on if a key is pressed or not:</p>
+<pre><pre class="playground"><code class="language-rust">#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  DISPCNT.write(0);
+  loop {
+    let k = KEYINPUT.read();
+    BACKDROP.write(if k.a() { Color::RED } else { Color::GREEN })
+  }
+}</code></pre></pre>
+<p>And I think that's enough for one article.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ex1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ex1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
