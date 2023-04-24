@@ -260,6 +260,8 @@ warning: `gba_from_scratch` (example "ex1") generated 1 warning
 Okay.
 It builds.
 
+## Using mGBA
+
 Let's see if it works I guess.
 Personally I like to use [mGBA](https://mgba.io/) as my emulator of choice, but any GBA emulator should be fine.
 If you're on Windows then your executable will be called `mgba.exe` by default, and if you're on Mac or Linux you'll get both `mgba` (no UI) and `mgba-qt` (has a menu bar and such around the video frame).
@@ -493,6 +495,8 @@ Nothing in our program ever calls `main`, and it's not public for outsiders to c
 Since no code can call `main` then no code can panic either, and the `panic_handler` function gets removed as well.
 We end up with nothing at all.
 
+## Writing A `_start`
+
 We need to add some code to our progam so that there will be something to output.
 Might as well define the `_start` function.
 
@@ -687,6 +691,8 @@ And so we try again
 If everything is right so far, mGBA should launch and show a white screen.
 Congrats, it didn't crash.
 
+## Checking With `objdump`
+
 If we want to double check that our code is showing up in the executable properly we can even use `objdump` to check that.
 If we pass `--disassemble` we can get a printout of the assembly.
 There's a bunch of other options for how to configure that output too, so check the `--help` output to see what you can do.
@@ -792,3 +798,5 @@ We've had *some effect* on the GBA.
 Which is enough to call this article over.
 In the next article we'll actually learn more details about what we just did,
 as well as more details about how else we can affect the screen.
+
+[This](https://github.com/Lokathor/gba-from-scratch/tree/b6dc1ca7c914f2e93d304c68b923208ccc48a92f) is the exact state of the repo when I finished this article.
