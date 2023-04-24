@@ -737,3 +737,5 @@ pub extern "C" fn main() -> ! {
 ```
 
 And I think that's enough for one article.
+
+[This](https://github.com/Lokathor/gba-from-scratch/tree/72ce44550f6d8fc7072a6bd11d97334246238b5f) is the exact commit of the project files when I finished writing this article.
