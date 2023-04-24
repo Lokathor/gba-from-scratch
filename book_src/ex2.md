@@ -74,6 +74,8 @@ In Rust terms it's a [VolAddress](https://docs.rs/voladdress/latest/voladdress/s
 It's safe to read or write, and it's located at `0x0400_0000` like we saw before.
 
 ```rust
+// in lib.rs
+
 use voladdress::{Safe, VolAddress};
 
 pub const DISPCNT: VolAddress<u16, Safe, Safe> =
