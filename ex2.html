@@ -188,8 +188,9 @@ so most of this series will involve explaining MMIO address values and the corre
 </ul>
 <h2 id="volatile-memory-access"><a class="header" href="#volatile-memory-access">Volatile Memory Access</a></h2>
 <p>Normally the compiler will try to keep memory accesses to a minimum.
-If it sees you read an address twice without a write in between, it'll (usually) only do the read once.
-If you write to an address twice without a read in between it'll (usually) skip the first read.
+If it sees you read an address twice without a write in between, it'll (usually) only do the first read.
+If you write to an address twice without a read in between it'll (usually) skip the first write.
+I say &quot;usually&quot; because it depends on optimization level and such.
 It's simple stuff, but it makes programs fast, and we want our programs fast.</p>
 <p>However, when working with MMIO every single memory access has to happen <em>exactly</em> as we write it in our program.
 If we're (for example) reading the address for the button data then <em>of course</em> we'd read it over and over without ever doing a write.
