@@ -212,7 +212,9 @@ In Rust terms it's a <a href="https://docs.rs/voladdress/latest/voladdress/struc
 It's safe to read or write, and it's located at <code>0x0400_0000</code> like we saw before.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use voladdress::{Safe, VolAddress};
+</span>// in lib.rs
+
+use voladdress::{Safe, VolAddress};
 
 pub const DISPCNT: VolAddress&lt;u16, Safe, Safe&gt; =
   unsafe { VolAddress::new(0x0400_0000) };
