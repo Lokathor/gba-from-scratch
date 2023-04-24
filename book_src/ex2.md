@@ -642,10 +642,10 @@ pub const KEYINPUT: VolAddress<u16, Safe, ()> =
 ```
 
 Note that instead of `Safe` as the write type we've put `()` instead.
-The key data is naturally write only.
-The CPU can't just tell the GBA to make a button be pressed or not.
+The key data is naturally read-only.
+The CPU can't just tell the GBA to make a button be pressed or not, that's not gonna move the buttons.
 
-With this new MMIO we can show a color based on the keys:
+With this new MMIO we can read the keys and then show a color based on the value:
 
 ```rust
 // in ex2.rs
@@ -662,7 +662,8 @@ pub extern "C" fn main() -> ! {
 Now if we run the program and press different keys we'll see the color change.
 
 Each bits of `KEYINPUT` that's connected to a key will be 0 when the key is pressed and 1 when the key is released.
-Bits not connected to a key will always just be 0.
+It's known as a "low-active" control scheme, because when a key is pressed it goes from high (1) to low (0).
+Bits not connected to any key will always just be 0.
 Which key controls which bit is as follows:
 
 | Bit | Key |
