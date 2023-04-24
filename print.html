@@ -1331,9 +1331,9 @@ pub const KEYINPUT: VolAddress&lt;u16, Safe, ()&gt; =
   unsafe { VolAddress::new(0x400_0130) };
 <span class="boring">}</span></code></pre></pre>
 <p>Note that instead of <code>Safe</code> as the write type we've put <code>()</code> instead.
-The key data is naturally write only.
-The CPU can't just tell the GBA to make a button be pressed or not.</p>
-<p>With this new MMIO we can show a color based on the keys:</p>
+The key data is naturally read-only.
+The CPU can't just tell the GBA to make a button be pressed or not, that's not gonna move the buttons.</p>
+<p>With this new MMIO we can read the keys and then show a color based on the value:</p>
 <pre><pre class="playground"><code class="language-rust">// in ex2.rs
 #[no_mangle]
 pub extern &quot;C&quot; fn main() -&gt; ! {
@@ -1345,7 +1345,8 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 }</code></pre></pre>
 <p>Now if we run the program and press different keys we'll see the color change.</p>
 <p>Each bits of <code>KEYINPUT</code> that's connected to a key will be 0 when the key is pressed and 1 when the key is released.
-Bits not connected to a key will always just be 0.
+It's known as a &quot;low-active&quot; control scheme, because when a key is pressed it goes from high (1) to low (0).
+Bits not connected to any key will always just be 0.
 Which key controls which bit is as follows:</p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">Bit</th><th style="text-align: left">Key</th></tr></thead><tbody>
 <tr><td style="text-align: center">0</td><td style="text-align: left">A</td></tr>
