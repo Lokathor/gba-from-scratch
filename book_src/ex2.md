@@ -44,8 +44,9 @@ Note that an MMIO address is *not* like normal memory:
 ## Volatile Memory Access
 
 Normally the compiler will try to keep memory accesses to a minimum.
-If it sees you read an address twice without a write in between, it'll (usually) only do the read once.
-If you write to an address twice without a read in between it'll (usually) skip the first read.
+If it sees you read an address twice without a write in between, it'll (usually) only do the first read.
+If you write to an address twice without a read in between it'll (usually) skip the first write.
+I say "usually" because it depends on optimization level and such.
 It's simple stuff, but it makes programs fast, and we want our programs fast.
 
 However, when working with MMIO every single memory access has to happen *exactly* as we write it in our program.
