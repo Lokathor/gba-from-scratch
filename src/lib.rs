@@ -16,12 +16,26 @@ pub const BACKDROP: VolAddress<Color, Safe, Safe> =
 pub const OBJ_PALETTE: VolBlock<Color, Safe, Safe, 256> =
   unsafe { VolBlock::new(0x0500_0200) };
 
+pub type ObjTile4bpp = [u32; ((8 * 8) * 4) / 8 / 4];
+pub const OBJ_TILES_4BPP: VolBlock<ObjTile4bpp, Safe, Safe, 1024> =
+  unsafe { VolBlock::new(0x0601_0000) };
+
+pub type ObjTile8bpp = [u32; ((8 * 8) * 8) / 8 / 4];
+pub const OBJ_TILES_8BPP: VolBlock<ObjTile8bpp, Safe, Safe, 512> =
+  unsafe { VolBlock::new(0x0601_0000) };
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct Color(pub u16);
 impl Color {
-  pub const RED: Self = Self::rgb(31, 0, 0);
+  pub const BLACK: Self = Self::rgb(0, 0, 0);
+  pub const BLUE: Self = Self::rgb(0, 0, 31);
   pub const GREEN: Self = Self::rgb(0, 31, 0);
+  pub const CYAN: Self = Self::rgb(0, 31, 31);
+  pub const RED: Self = Self::rgb(31, 0, 0);
+  pub const MAGENTA: Self = Self::rgb(31, 0, 31);
+  pub const YELLOW: Self = Self::rgb(31, 31, 0);
+  pub const WHITE: Self = Self::rgb(31, 31, 31);
 
   #[inline]
   #[must_use]

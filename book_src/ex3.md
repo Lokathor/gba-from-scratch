@@ -108,11 +108,89 @@ pub extern "C" fn main() -> ! {
 }
 ```
 
-That's it for the display control.
+For now that's all we need to do for the display control.
 
 ## Object Palette
 
-TODO
+Objects always need to use "paletted" color.
+Instead of each pixel within the object's image holding a full color value, it just holds an index into the palette.
+This allows each pixel to only need 4 or 8 bits each, instead of the 16 bits needed for a complete color.
+
+The palette for objects starts at `0x0500_0200`, and it's 256 entries long.
+Each object can use 8 bits per pixel (8bpp) or 4 bits per pixel (4bpp).
+
+* When an object is set for 8bpp each non-zero pixel value is the 8-bit index into the object palette.
+  A pixel value of 0 means that the object is transparent in that pixel.
+  This allows for up to 255 colors to be used within a single object.
+* When an object is set for 4bpp each non-zero pixel value is *the low half* of the full index value.
+  A second setting within the object's attributes determine the upper half of the index value.
+  This effectively splits the palette memory into 16 "palbank" groupings.
+  As with 8bpp objects, a pixel value of 0 makes a transparent pixel.
+  This allows for up to 15 colors within a single object.
+
+You might notice that index 0 of the object palette isn't ever used by either mode.
+The memory itself exists for consistency, but the GBA will never use the color value in that position.
+Call it a free global variable for your own personal use, if you want.
+
+Since we have a series of color values instead of just a single color value,
+this time we'll declare the object palette as a [VolBlock](https://docs.rs/voladdress/latest/voladdress/struct.VolBlock.html) instead of a `VolAddress`.
+
+```rust
+// in lib.rs
+
+pub const OBJ_PALETTE: VolBlock<Color, Safe, Safe, 256> =
+  unsafe { VolBlock::new(0x0500_0200) };
+```
+
+A `VolBlock` works mostly like an array does.
+We call `OBJ_PALETTE.index(i)` to get a particular `VolAddress`, and then we can read or write that address.
+We could also use `get` if we want to do an optional lookup, or we could iterate the block, etc.
+
+First let's make some more named color constants.
+We'll name each of the 8 colors you get when each of the three color channels is either no-intensity or full-intensity.
+
+```rust
+// in lib.rs
+
+impl Color {
+  pub const BLACK: Self = Self::rgb(0, 0, 0);
+  pub const BLUE: Self = Self::rgb(0, 0, 31);
+  pub const GREEN: Self = Self::rgb(0, 31, 0);
+  pub const CYAN: Self = Self::rgb(0, 31, 31);
+  pub const RED: Self = Self::rgb(31, 0, 0);
+  pub const MAGENTA: Self = Self::rgb(31, 0, 31);
+  pub const YELLOW: Self = Self::rgb(31, 31, 0);
+  pub const WHITE: Self = Self::rgb(31, 31, 31);
+  // ...
+}
+```
+
+Now we can set up a backdrop color and two different palette entries.
+
+```rust
+// in ex3.rs
+
+#[no_mangle]
+pub extern "C" fn main() -> ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  DISPCNT.write(JUST_SHOW_OBJECTS);
+
+  loop {}
+}
+```
+
+If we run the example in mGBA we can check our work using the debug utilities.
+In the menu, "Tools -> Game State Views -> View Palette..." will open a dialog showing all the background and object palette info.
+
+* The backdrop color will show up in the 0th entry of the background palette.
+* The two object palette colors will be in positions 1 and 2 of the top row.
+
+Each row of the palette is shown 16 colors at a time, so it's easy to tell what's happening in both 8bpp and 4bpp modes.
+
+That should be enough palette setup to continue with the tutorial.
 
 ## Object Tile Memory
 
