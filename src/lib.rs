@@ -1,9 +1,10 @@
 #![no_std]
 #![feature(naked_functions)]
 
-use voladdress::{Safe, VolAddress};
+use bitfrob::u16_with_bit;
+use voladdress::{Safe, VolAddress, VolBlock};
 
-pub const DISPCNT: VolAddress<u16, Safe, Safe> =
+pub const DISPCNT: VolAddress<DisplayControl, Safe, Safe> =
   unsafe { VolAddress::new(0x0400_0000) };
 
 pub const KEYINPUT: VolAddress<KeyInput, Safe, ()> =
@@ -11,6 +12,9 @@ pub const KEYINPUT: VolAddress<KeyInput, Safe, ()> =
 
 pub const BACKDROP: VolAddress<Color, Safe, Safe> =
   unsafe { VolAddress::new(0x0500_0000) };
+
+pub const OBJ_PALETTE: VolBlock<Color, Safe, Safe, 256> =
+  unsafe { VolBlock::new(0x0500_0200) };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
@@ -51,6 +55,28 @@ impl KeyInput {
   pub const fn r(self) -> bool { (self.0 & (1<<8)) == 0 }
   #[inline]
   pub const fn l(self) -> bool { (self.0 & (1<<9)) == 0 }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct DisplayControl(u16);
+impl DisplayControl {
+  #[inline]
+  pub const fn new() -> Self {
+    Self(0)
+  }
+  #[inline]
+  pub const fn with_linear_obj_tiles(self, linear: bool) -> Self {
+    Self(u16_with_bit(6, self.0, linear))
+  }
+  #[inline]
+  pub const fn with_forced_blank(self, blank: bool) -> Self {
+    Self(u16_with_bit(7, self.0, blank))
+  }
+  #[inline]
+  pub const fn with_objects(self, objects: bool) -> Self {
+    Self(u16_with_bit(12, self.0, objects))
+  }
 }
 
 #[naked]
