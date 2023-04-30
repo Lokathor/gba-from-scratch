@@ -194,7 +194,47 @@ That should be enough palette setup to continue with the tutorial.
 
 ## Object Tile Memory
 
-TODO
+First, what is a tile exactly:
+
+* A tile is an 8x8 square of palette indexes.
+* A palette index can be either 4 bits or 8 bits (the "bit depth").
+* The indexes store one row at a time, left to right, top to bottom.
+
+So we might have the following Rust constants
+
+```rust
+// in lib.rs
+
+const PIXELS_PER_TILE: usize = 8 * 8;
+const BITS_PER_BYTE: usize = 8;
+const TILE4_SIZE: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
+const TILE8_SIZE: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
+```
+
+The GBA is much faster at transferring data around when it's aligned to 4.
+More aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
+Tiles, particularly if we've got dozens or hundreds of them, count as "big enough to care about alignment".
+So we'll model tile data as being arrays of `u32` values, which will keep the data aligned to 4.
+
+```rust
+// in lib.rs
+
+const SIZE_OF_U32: usize = core::mem::size_of::<u32>();
+pub type Tile4 = [u32; TILE4_SIZE / SIZE_OF_U32];
+pub type Tile8 = [u32; TILE8_SIZE / SIZE_OF_U32];
+```
+
+You might be thinking, since we have a type for our tiles, that we're ready to declare the memory block of the object tiles.
+Unfortunately this is the first slightly weird part of the object tiles.
+The attributes for an object include a tile index for which tile or tiles the object will use.
+That tile index is *always* a 32 byte index (the size of a `Tile4`), regardless of the bit depth of the object's tiles.
+This lines up perfectly with 4bpp tiles.
+Every 4bpp tile is 32 bytes, and each index is a 32 byte offset.
+It doesn't work so well with 8bpp tiles.
+Each 8bpp tile is 64 bytes, and the indexes are still only 32 bytes each.
+When drawing with 8bpp objects each "one tile" of data takes up two indexes.
+
+
 
 ## Object Attribute Memory
 

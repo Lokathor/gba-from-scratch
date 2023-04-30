@@ -2,7 +2,7 @@
 #![feature(naked_functions)]
 
 use bitfrob::u16_with_bit;
-use voladdress::{Safe, VolAddress, VolBlock};
+use voladdress::{Safe, VolAddress, VolBlock, VolSeries};
 
 pub const DISPCNT: VolAddress<DisplayControl, Safe, Safe> =
   unsafe { VolAddress::new(0x0400_0000) };
@@ -16,13 +16,18 @@ pub const BACKDROP: VolAddress<Color, Safe, Safe> =
 pub const OBJ_PALETTE: VolBlock<Color, Safe, Safe, 256> =
   unsafe { VolBlock::new(0x0500_0200) };
 
-pub type ObjTile4bpp = [u32; ((8 * 8) * 4) / 8 / 4];
-pub const OBJ_TILES_4BPP: VolBlock<ObjTile4bpp, Safe, Safe, 1024> =
-  unsafe { VolBlock::new(0x0601_0000) };
+const PIXELS_PER_TILE: usize = 8 * 8;
+const BITS_PER_BYTE: usize = 8;
+const TILE4_SIZE: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
+const TILE8_SIZE: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
+const SIZE_OF_U32: usize = core::mem::size_of::<u32>();
+pub type Tile4 = [u32; TILE4_SIZE / SIZE_OF_U32];
+pub type Tile8 = [u32; TILE8_SIZE / SIZE_OF_U32];
 
-pub type ObjTile8bpp = [u32; ((8 * 8) * 8) / 8 / 4];
-pub const OBJ_TILES_8BPP: VolBlock<ObjTile8bpp, Safe, Safe, 512> =
+pub const OBJ_TILES4: VolBlock<Tile4, Safe, Safe, 1024> =
   unsafe { VolBlock::new(0x0601_0000) };
+pub const OBJ_TILES8: VolSeries<Tile8, Safe, Safe, 1023, TILE8_SIZE> =
+  unsafe { VolSeries::new(0x0601_0000) };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
