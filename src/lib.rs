@@ -4,6 +4,12 @@
 use bitfrob::u16_with_bit;
 use voladdress::{Safe, VolAddress, VolBlock, VolSeries};
 
+macro_rules! kilobytes {
+  ($bytes:expr) => {
+    $bytes * 1024
+  };
+}
+
 pub const DISPCNT: VolAddress<DisplayControl, Safe, Safe> =
   unsafe { VolAddress::new(0x0400_0000) };
 
@@ -16,18 +22,52 @@ pub const BACKDROP: VolAddress<Color, Safe, Safe> =
 pub const OBJ_PALETTE: VolBlock<Color, Safe, Safe, 256> =
   unsafe { VolBlock::new(0x0500_0200) };
 
-const PIXELS_PER_TILE: usize = 8 * 8;
-const BITS_PER_BYTE: usize = 8;
-const TILE4_SIZE: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
-const TILE8_SIZE: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
-const SIZE_OF_U32: usize = core::mem::size_of::<u32>();
-pub type Tile4 = [u32; TILE4_SIZE / SIZE_OF_U32];
-pub type Tile8 = [u32; TILE8_SIZE / SIZE_OF_U32];
+pub const PIXELS_PER_TILE: usize = 8 * 8;
+pub const BITS_PER_BYTE: usize = 8;
+pub const SIZE_OF_TILE4: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
+pub const SIZE_OF_TILE8: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
+pub const SIZE_OF_OBJ_TILE_MEM: usize = kilobytes!(32);
+pub const SIZE_OF_U32: usize = core::mem::size_of::<u32>();
+pub const TILE4_WORD_COUNT: usize = SIZE_OF_TILE4 / SIZE_OF_U32;
+pub const TILE8_WORD_COUNT: usize = SIZE_OF_TILE8 / SIZE_OF_U32;
+pub const OBJ_TILE_MEM_WORD_COUNT: usize = SIZE_OF_OBJ_TILE_MEM / SIZE_OF_U32;
 
-pub const OBJ_TILES4: VolBlock<Tile4, Safe, Safe, 1024> =
+pub const OBJ_TILES_U32: VolBlock<u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT> =
   unsafe { VolBlock::new(0x0601_0000) };
-pub const OBJ_TILES8: VolSeries<Tile8, Safe, Safe, 1023, TILE8_SIZE> =
+
+pub type Tile4 = [u32; TILE4_WORD_COUNT];
+pub const OBJ_TILE4: VolBlock<Tile4, Safe, Safe, 1024> =
+  unsafe { VolBlock::new(0x0601_0000) };
+
+pub type Tile8 = [u32; TILE8_WORD_COUNT];
+pub const OBJ_TILE8: VolSeries<Tile8, Safe, Safe, 1023, 32> =
   unsafe { VolSeries::new(0x0601_0000) };
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct ObjAttr0(pub u16);
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct ObjAttr1(pub u16);
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct ObjAttr2(pub u16);
+
+pub const OBJ_ATTRS_0: VolSeries<ObjAttr0, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+pub const OBJ_ATTRS_1: VolSeries<ObjAttr1, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+pub const OBJ_ATTRS_2: VolSeries<ObjAttr2, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
+pub struct ObjAttr(pub ObjAttr0, pub ObjAttr1, pub ObjAttr2);
+
+pub const OBJ_ATTRS: VolSeries<ObjAttr, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]

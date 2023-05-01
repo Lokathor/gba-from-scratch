@@ -205,41 +205,200 @@ So we might have the following Rust constants
 ```rust
 // in lib.rs
 
-const PIXELS_PER_TILE: usize = 8 * 8;
-const BITS_PER_BYTE: usize = 8;
-const TILE4_SIZE: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
-const TILE8_SIZE: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
+pub const PIXELS_PER_TILE: usize = 8 * 8;
+pub const BITS_PER_BYTE: usize = 8;
+pub const SIZE_OF_TILE4: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
+pub const SIZE_OF_TILE8: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
 ```
 
-The GBA is much faster at transferring data around when it's aligned to 4.
-More aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
+Also, there's 32K of object tile RAM.
+
+```rust
+// in lib.rs
+
+macro_rules! kilobytes {
+  ($bytes:expr) => {
+    $bytes * 1024
+  };
+}
+
+pub const SIZE_OF_OBJ_TILE_MEM: usize = kilobytes!(32);
+```
+
+Now we know how bit everything is, in bytes.
+However, video memory doesn't work right with byte writes.
+We can cover the details another time, but with video memory you always have to write in 16-bit or 32-bit chunks.
+Also, the GBA is simply much faster at transferring bulk data around when it's aligned to 4.
+Data aligned to 4 can be copied one or more `u32` values at time (one or more "words" in ARM terms).
+Being more aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
 Tiles, particularly if we've got dozens or hundreds of them, count as "big enough to care about alignment".
 So we'll model tile data as being arrays of `u32` values, which will keep the data aligned to 4.
 
 ```rust
 // in lib.rs
 
-const SIZE_OF_U32: usize = core::mem::size_of::<u32>();
-pub type Tile4 = [u32; TILE4_SIZE / SIZE_OF_U32];
-pub type Tile8 = [u32; TILE8_SIZE / SIZE_OF_U32];
+pub const SIZE_OF_U32: usize = core::mem::size_of::<u32>();
+pub const TILE4_WORD_COUNT: usize = SIZE_OF_TILE4 / SIZE_OF_U32;
+pub const TILE8_WORD_COUNT: usize = SIZE_OF_TILE8 / SIZE_OF_U32;
+pub const OBJ_TILE_MEM_WORD_COUNT: usize = SIZE_OF_OBJ_TILE_MEM / SIZE_OF_U32;
 ```
 
-You might be thinking, since we have a type for our tiles, that we're ready to declare the memory block of the object tiles.
-Unfortunately this is the first slightly weird part of the object tiles.
-The attributes for an object include a tile index for which tile or tiles the object will use.
-That tile index is *always* a 32 byte index (the size of a `Tile4`), regardless of the bit depth of the object's tiles.
-This lines up perfectly with 4bpp tiles.
-Every 4bpp tile is 32 bytes, and each index is a 32 byte offset.
-It doesn't work so well with 8bpp tiles.
-Each 8bpp tile is 64 bytes, and the indexes are still only 32 bytes each.
-When drawing with 8bpp objects each "one tile" of data takes up two indexes.
+Which lets us declare the block of *words* where our object tile data goes.
 
+```rust
+// in lib.rs
 
+pub const OBJ_TILES_U32: VolBlock<u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT> =
+  unsafe { VolBlock::new(0x0601_0000) };
+```
+
+Here's where things get kinda weird.
+An object's attributes (most of which we'll cover lower down) include a "Tile ID" for the base tile of the object.
+These tile id values are used as a 32 byte index, regardless of 4bpp or 8bpp.
+This means that they line up perfectly with a 4bpp view of the tile data, and we get 1024 IDs.
+
+```rust
+// in lib.rs
+
+pub type Tile4 = [u32; TILE4_WORD_COUNT];
+pub const OBJ_TILE4: VolBlock<Tile4, Safe, Safe, 1024> =
+  unsafe { VolBlock::new(0x0601_0000) };
+```
+
+But with 8bpp objects we end up in a pickle.
+We could use a [VolSeries](https://docs.rs/voladdress/latest/voladdress/struct.VolSeries.html), which is an alternative to the `VolBlock` type, for when the stride and the element size aren't the same.
+The `VolSeries` type is mostly intended for when the stride is *bigger* than the element size, but the math will work out either way.
+Note that since 8bpp tiles are twice as big we have to cut down the number of tiles from 1024 to 1023 so that using the last index doesn't go out of bounds.
+
+```rust
+// in lib.rs
+
+pub type Tile8 = [u32; TILE8_WORD_COUNT];
+pub const OBJ_TILE8: VolSeries<Tile8, Safe, Safe, 1023, 32> =
+  unsafe { VolSeries::new(0x0601_0000) };
+```
+
+And, well, it looks kinda weird every time I look at the code but... that's how the hardware works.
+It's the ultimate arbiter of what's correct, so sometimes you gotta just go with it.
+
+We can always think about this more later, and maybe improve it then.
+For now it's enough that we've got the right addresses at all.
+
+**One final note:** In video modes 3, 4, and 5 the lower half of the object tile region instead gets used as part of the background.
+In this case, only object tile index values 512 and above are usable for object display.
 
 ## Object Attribute Memory
 
+Separate from the object tile memory, there's also the Object Attribute Memory (OAM) region.
+This has space for 128 "attribute" entries, which defines how the objects are shown.
+An object's "attribute" data is 6 bytes, split into three `u16` values.
+The three fields don't have fancy names, they're just called 0, 1, and 2.
+
+```rust
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct ObjAttr0(pub u16);
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct ObjAttr1(pub u16);
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct ObjAttr2(pub u16);
+```
+
+In between each attribute data entry is *part of* an affine entry.
+That's right, only a part of one.
+A full affine entry is four `i16` values (called A, B, C, and D).
+There's one `i16` affine value per three `u16` attribute values.
+The memory looks kinda like this.
+
+* obj0.attr0
+* obj0.attr1
+* obj0.attr2
+* affine0.a
+* obj1.attr0
+* obj1.attr1
+* obj1.attr2
+* affine0.b
+* obj2.attr0
+* obj2.attr1
+* obj2.attr2
+* affine0.c
+* obj3.attr0
+* obj3.attr1
+* obj3.attr2
+* affine0.d
+
+And so on, so that spread among the 128 object attribute entries there's also 32 affine entries.
+It's a little strange.
+It's just... how it works.
+
+Once again we'll use a `VolSeries` to model this.
+
+```rust
+// in lib.rs
+
+pub const OBJ_ATTRS_0: VolSeries<ObjAttr0, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+pub const OBJ_ATTRS_1: VolSeries<ObjAttr1, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+pub const OBJ_ATTRS_2: VolSeries<ObjAttr2, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+```
+
+Alternately, we could group the attributes into a single struct and view things that way.
+
+```rust
+// in lib.rs
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
+pub struct ObjAttr(pub ObjAttr0, pub ObjAttr1, pub ObjAttr2);
+
+pub const OBJ_ATTRS: VolSeries<ObjAttr, Safe, Safe, 128, 64> =
+  unsafe { VolSeries::new(0x0700_0000) };
+```
+
+### Object Attribute 0
+
+| Bit(s) | Setting |
+|:-:|:-|
+| 0-7  | Y coordinate (`0..=255`) |
+| 8    | Affine flag |
+| 9    | Double size (affine) OR invisible (non-affine) |
+| 10-11| Mode: Normal, Semi-transparent, Window |
+| 12   | Mosaic flag |
+| 13   | Use 8bpp |
+| 14-15| Shape: Square, Horizontal, Vertical |
+
 TODO
+
+### Object Attribute 1
+
+| Bit(s) | Setting |
+|:-:|:-|
+| 0-7  | X coordinate (`0..=511`) |
+| 9-13 | Affine entry index (affine only) |
+| 12   | Horizontal flip flag (non-affine) |
+| 13   | Vertical flip flag (non-affine) |
+| 14-15| Size: 0 to 4 (see below) |
+
+TODO
+
+### Object Attribute 2
+
+| Bit(s) | Setting |
+|:-:|:-|
+| 0-9  | Base Tile ID |
+| 10-11| Priority (lower is closer to the viewer) |
+| 12-15| Palbank index (if 4bpp) |
+
+TODO
+
+## Showing Static Objects
+
+## Moving The Objects Way Too Fast
 
 ## Waiting For Vertical Blank
-
-TODO
