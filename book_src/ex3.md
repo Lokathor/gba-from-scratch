@@ -6,8 +6,13 @@ Probably we should focus on how to improve our drawing abilities.
 Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called "OBJ" for short).
 The background layers let you draw a few "big" things (128x128 or bigger), and the objects let you draw many "small" things (64x64 or less).
 
-The objects have a consistent behavior, while the four background layers behave differently depending on the "video mode" that you set in the display control.
+The objects have a fairly consistent behavior, while the four background layers behave differently depending on the "video mode" that you set in the display control.
 That's reason enough to focus on the objects first.
+
+Small additonal note: "objects" are sometimes called "sprites" too.
+Depending on who you ask the two words are either completely interchangable *or* they have important differences.
+What exactly the difference is can depend on who you ask.
+I don't really care myself, so I'm just going to stick to "objects" as often as I can in this tutorial and not worry about it.
 
 ## Display Control
 
@@ -254,7 +259,7 @@ pub const OBJ_TILES_U32: VolBlock<u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT> =
 
 Here's where things get kinda weird.
 An object's attributes (most of which we'll cover lower down) include a "Tile ID" for the base tile of the object.
-These tile id values are used as a 32 byte index, regardless of 4bpp or 8bpp.
+These tile id values are used as an index for 32 byte offsetting, regardless of 4bpp or 8bpp.
 This means that they line up perfectly with a 4bpp view of the tile data, and we get 1024 IDs.
 
 ```rust
@@ -336,6 +341,10 @@ It's a little strange.
 It's just... how it works.
 
 Once again we'll use a `VolSeries` to model this.
+We can make one declaration per attribute series.
+Attribute 0 will be at the "base" of the OAM region,
+with attribute 1 being offset by 2 bytes (the size of a `u16`),
+and attribute 2 being offset by 4 bytes (the size of two `u16`).
 
 ```rust
 // in lib.rs
@@ -343,9 +352,9 @@ Once again we'll use a `VolSeries` to model this.
 pub const OBJ_ATTRS_0: VolSeries<ObjAttr0, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000) };
 pub const OBJ_ATTRS_1: VolSeries<ObjAttr1, Safe, Safe, 128, 64> =
-  unsafe { VolSeries::new(0x0700_0000) };
+  unsafe { VolSeries::new(0x0700_0000 + 2) };
 pub const OBJ_ATTRS_2: VolSeries<ObjAttr2, Safe, Safe, 128, 64> =
-  unsafe { VolSeries::new(0x0700_0000) };
+  unsafe { VolSeries::new(0x0700_0000 + 4) };
 ```
 
 Alternately, we could group the attributes into a single struct and view things that way.
@@ -361,41 +370,117 @@ pub const OBJ_ATTRS: VolSeries<ObjAttr, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000) };
 ```
 
+This is definitely one of those "it depends on how you want to do it" things.
+
 ### Object Attribute 0
 
 | Bit(s) | Setting |
 |:-:|:-|
-| 0-7  | Y coordinate (`0..=255`) |
+| 0-7  | Y coordinate (8 bits) |
 | 8    | Affine flag |
 | 9    | Double size (affine) OR invisible (non-affine) |
 | 10-11| Mode: Normal, Semi-transparent, Window |
 | 12   | Mosaic flag |
 | 13   | Use 8bpp |
-| 14-15| Shape: Square, Horizontal, Vertical |
+| 14-15| Orientation: Square, Horizontal, Vertical |
 
-TODO
+The Y coordinate is explained in the "Object Positioning", below.
+
+The Affine flag in Bit 8 determines if the object will use affine display.
+We're going to leave all discussion of affine drawing for a later lesson.
+
+Bit 9 can make an affine object double size, or it can make a non-affine object invisible.
+It might be easier to think of bits 8 and 9 as being "one value" which sets one of four styles,
+but mGBA's debug viewer shows them as two separate flags so I'm going to list them as two separate flags.
+
+The objects's Mode sets which special effect the object should be part of.
+We'll talk about blending effects and the window effect later on, but now you know what bits are involed on the object side.
+
+Similarly, you can have an object enable the mosaic effect, but special effects are some future lesson.
+
+The 8bpp flag sets if the object's tile data should be interpreted as 8bpp or 4bpp.
+Each object can decide for itself which mode to use.
+
+Finally, each object gets an "Orientation", which GBATEK calls the "Shape".
+This is combined with the object's Size (see below) to determine the object's dimensions.
 
 ### Object Attribute 1
 
 | Bit(s) | Setting |
 |:-:|:-|
-| 0-7  | X coordinate (`0..=511`) |
+| 0-8  | X coordinate (9 bits) |
 | 9-13 | Affine entry index (affine only) |
 | 12   | Horizontal flip flag (non-affine) |
 | 13   | Vertical flip flag (non-affine) |
 | 14-15| Size: 0 to 4 (see below) |
 
-TODO
+The X coordinate is explained in the "Object Positioning", below.
+
+The Affine Entry index determines which affine transform matrix an affine object uses.
+Since we, again, won't touch affine stuff until later, we can ignore that for now.
+
+If an object is *not* in affine mode, you can apply a plain veritcal and/or horizontal flip to the object using bits 12 and 13.
+
+The object's Size, when combined with the Orientation (see above) sets the object's width and height:
+
+| Size | Square | Horizontal | Vertical |
+|:-:|:-:|:-:|:-:|
+| 0 | 8x8 | 16x8 | 8x16 |
+| 1 | 16x16 | 32x8 | 8x32 |
+| 2 | 32x32 | 32x16 | 16x32 |
+| 3 | 64x64 | 64x32 | 32x64 |
 
 ### Object Attribute 2
 
 | Bit(s) | Setting |
 |:-:|:-|
-| 0-9  | Base Tile ID |
+| 0-9  | Base Tile ID (10 bits, `0..=1023`) |
 | 10-11| Priority (lower is closer to the viewer) |
 | 12-15| Palbank index (if 4bpp) |
 
-TODO
+The tile selection for objects can be a little strange at first.
+
+* You pick a base tile index to start with. This determines the upper left tile of the object (the upper left 8x8).
+* If the object is wider than 8 pixels, additional tiles at +1 index each are used to fill in the rest of the row.
+* If the object is taller than 8 pixels, additional tiles are used to fill in the following rows.
+  * When the Display Control is set for linear object tile mapping ("1d mapping"), each following row is +1 tile index from the index of the *last* tile in the previous row.
+  * When the Display Control is *not* set for linear object tiles ("2d mapping"), each following row is +32 tile indexes from the *first* tile in the previous row.
+
+That can be a little confusing at first, so here's a small diagram.
+
+```
+// offsets for 1d / linear tiles
+ 0   1   2   3
+ 4   5   6   7
+ 8   9  10  11
+12  13  14  15
+
+// offsets for 2d / non-linear 
+ 0   1   2   3
+32  33  34  35
+64  65  66  67
+96  97  98  99
+```
+
+I think the origonal idea here was that if you imagine the object tile region to be specifically a 32 tile wide space of 32 rows, well then the 2d mapping mode *might* work well for you.
+All the source "sprite sheet" art can be transformed into memory relatively "as is", and a 2x2 or 4x4 or whatever size object can just be picked out of a spot in the sprite sheet and the rest of the tiles will fill in properly.
+I've never talked to a nintendo dev, but I think that was the idea.
+
+Either way, I don't think that the 2d layout style is really for me.
+I think that it's much easier to just use the 1d style and set up any art data apropriately during the compilation.
+
+This is another one of those "any style can work" things.
+The hardware doesn't care which one you pick, as long as all the settings line up you'll see a picture.
+
+### Object Positioning
+
+The X and Y coordinates of an object set the position of its *upper left* corner.
+The Y axis increases *downward*, and the X axis increases *rightward*.
+Object coordinates use wrapping integer addition both vertically and horizontally.
+This means that it's usually most useful to think of coordinate values as being signed values, but using unsigned values will give the same result.
+One minor problem is that Rust doesn't have a native `i9` datatype.
+If we use an `i16` and mask the lowest 9 bits into the attribute bits then we'll get the right bits in the end.
+It's a little bit awkward, but not really that bad.
 
 ## Showing Static Objects
 
