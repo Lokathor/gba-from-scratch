@@ -153,6 +153,13 @@ With the C ABI the caller will never pass data through `r12`, and functions are 
 That's all that `_start` has to do for now.
 Later it will have some setup work to do before calling `main`, but not yet.
 
+### This Is An Incomplete Start Function
+
+**NOTE:** This `_start` function is "incomplete" in the sense that it doesn't initialize RAM.
+This means that you can't use any static mutable data with non-zero initial values.
+We're not doing that right now, so that's not a problem for us right now, and we'll get to that eventually.
+But it is a non-obvious limitation worth mentioning.
+
 ## Adding `main` To `ex2.rs`
 
 Now in `ex2.rs` we need to have a `main` function that's `no_mangle`, `extern "C"`, and that doesn't ever return.

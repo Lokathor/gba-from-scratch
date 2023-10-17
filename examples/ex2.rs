@@ -1,11 +1,11 @@
 #![no_std]
 #![no_main]
 
-use gba_from_scratch::{Color, BACKDROP, DISPCNT, KEYINPUT};
+use gba_from_scratch::{Color, DisplayControl, BACKDROP, DISPCNT, KEYINPUT};
 
 #[no_mangle]
 pub extern "C" fn main() -> ! {
-  DISPCNT.write(0);
+  DISPCNT.write(DisplayControl::new());
   loop {
     let k = KEYINPUT.read();
     BACKDROP.write(if k.a() { Color::RED } else { Color::GREEN })
