@@ -1,4 +1,4 @@
-# Objects
+# Objects / Sprites
 
 Now that we can get user input there's a *lot* of things that we could learn about next.
 Probably we should focus on how to improve our drawing abilities.
@@ -6,8 +6,15 @@ Probably we should focus on how to improve our drawing abilities.
 Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called "OBJ" for short).
 The background layers let you draw a few "big" things (128x128 or bigger), and the objects let you draw many "small" things (64x64 or less).
 
-The objects have a consistent behavior, while the four background layers behave differently depending on the "video mode" that you set in the display control.
+The objects have a fairly consistent behavior, while the four background layers behave differently depending on the "video mode" that you set in the display control.
 That's reason enough to focus on the objects first.
+
+### Are They Objects Or Are They Sprites?
+
+The objects are sometimes called "sprites".
+GBATEK calls them objects, and mGBA (v0.10 at least) calls them sprites.
+Some people care about the difference between the two terms, but I don't.
+I'm just going to say "object" most of the time in this series because the data for them is called the "object active memory".
 
 ## Display Control
 
@@ -197,7 +204,7 @@ That should be enough palette setup to continue with the tutorial.
 First, what is a tile exactly:
 
 * A tile is an 8x8 square of palette indexes.
-* A palette index can be either 4 bits or 8 bits (the "bit depth").
+* A palette index can be either 4 bits per pixel (4bpp) or 8 bits per pixel (8bpp). This is the "bit depth" of the indexes.
 * The indexes store one row at a time, left to right, top to bottom.
 
 So we might have the following Rust constants
@@ -225,14 +232,14 @@ macro_rules! kilobytes {
 pub const SIZE_OF_OBJ_TILE_MEM: usize = kilobytes!(32);
 ```
 
-Now we know how bit everything is, in bytes.
-However, video memory doesn't work right with byte writes.
+Now we know how big everything is, in bytes.
+However, the GBA's video memory does **NOT** work right with individual byte writes.
 We can cover the details another time, but with video memory you always have to write in 16-bit or 32-bit chunks.
 Also, the GBA is simply much faster at transferring bulk data around when it's aligned to 4.
 Data aligned to 4 can be copied one or more `u32` values at time (one or more "words" in ARM terms).
 Being more aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
 Tiles, particularly if we've got dozens or hundreds of them, count as "big enough to care about alignment".
-So we'll model tile data as being arrays of `u32` values, which will keep the data aligned to 4.
+This means that instead of modeling tile data as being arrays of `u8`, we'll use smaller arrays of `u32`, which will keep the data aligned to 4.
 
 ```rust
 // in lib.rs
@@ -243,7 +250,7 @@ pub const TILE8_WORD_COUNT: usize = SIZE_OF_TILE8 / SIZE_OF_U32;
 pub const OBJ_TILE_MEM_WORD_COUNT: usize = SIZE_OF_OBJ_TILE_MEM / SIZE_OF_U32;
 ```
 
-Which lets us declare the block of *words* where our object tile data goes.
+Which lets us declare the block of `u32` values where our object tile data goes.
 
 ```rust
 // in lib.rs
@@ -254,7 +261,7 @@ pub const OBJ_TILES_U32: VolBlock<u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT> =
 
 Here's where things get kinda weird.
 An object's attributes (most of which we'll cover lower down) include a "Tile ID" for the base tile of the object.
-These tile id values are used as a 32 byte index, regardless of 4bpp or 8bpp.
+These tile id values are used as a 32 byte index, regardless of if the object uses 4bpp or 8bpp drawing.
 This means that they line up perfectly with a 4bpp view of the tile data, and we get 1024 IDs.
 
 ```rust
@@ -291,8 +298,10 @@ In this case, only object tile index values 512 and above are usable for object 
 
 Separate from the object tile memory, there's also the Object Attribute Memory (OAM) region.
 This has space for 128 "attribute" entries, which defines how the objects are shown.
-An object's "attribute" data is 6 bytes, split into three `u16` values.
-The three fields don't have fancy names, they're just called 0, 1, and 2.
+
+Each attribute needs 48 bits.
+This is an unfortunate number of bits, because it's not a clean power of 2.
+Normally we refer to each attribute entry as having three `u16` attributes just called 0, 1, and 2.
 
 ```rust
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -308,8 +317,8 @@ pub struct ObjAttr1(pub u16);
 pub struct ObjAttr2(pub u16);
 ```
 
-In between each attribute data entry is *part of* an affine entry.
-That's right, only a part of one.
+In between each attribute entry is *part of* an affine entry.
+That's right, just a part of an affine entry.
 A full affine entry is four `i16` values (called A, B, C, and D).
 There's one `i16` affine value per three `u16` attribute values.
 The memory looks kinda like this.
@@ -331,11 +340,10 @@ The memory looks kinda like this.
 * obj3.attr2
 * affine0.d
 
-And so on, so that spread among the 128 object attribute entries there's also 32 affine entries.
-It's a little strange.
-It's just... how it works.
+And then that pattern repeats 32 times.
+It's a little strange, but the hardware does what it does.
 
-Once again we'll use a `VolSeries` to model this.
+We can use use several `VolSeries` declarations to model this.
 
 ```rust
 // in lib.rs
@@ -361,44 +369,82 @@ pub const OBJ_ATTRS: VolSeries<ObjAttr, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000) };
 ```
 
+Using the `ObjAttr` type and `OBJ_ATTRS` series would make it so that all three object attribute fields get accessed.
+If you're only intending to update the position of an object (in attributes 0 and 1) without touching attribute 2, then maybe you'd care.
+It's pretty unlikely to matter, but maybe.
+
+Let's go over the actual properties within each object attribute field.
+
 ### Object Attribute 0
 
-| Bit(s) | Setting |
-|:-:|:-|
-| 0-7  | Y coordinate (`0..=255`) |
-| 8    | Affine flag |
-| 9    | Double size (affine) OR invisible (non-affine) |
-| 10-11| Mode: Normal, Semi-transparent, Window |
-| 12   | Mosaic flag |
-| 13   | Use 8bpp |
-| 14-15| Shape: Square, Horizontal, Vertical |
+* Bits 0 through 7 are the Y coordinate of the *top-left corner* of the object.
+  The screen is 160 pixels tall, and the coordinates wrap.
+  If you want something to appear to move up past the top of the screen, then wrap the Y value around.
+  Alternately, you can do the position math using signed values and then `as` cast the value to unsigned.
+* Bits 8 and 9 set what mGBA calls the "transform" of the object:
+  * 0 is no transform.
+  * 1 is affine rendering. Which affine entry is used is set in attribute 1.
+  * 2 is no transform and the object not drawn (it's "invisible").
+  * 3 is just like 1 but the object is rendered with double size.
+* Bits 10 and 11 set the special effect mode:
+  * 0 is no special effect.
+  * 1 is alpha blending.
+  * 2 is window masking. The object isn't shown, but acts as part of the object window mask.
+  * 3 is not allowed.
+* Bit 12 sets if the object uses the Mosaic special effect.
+  This can be enabled/disabled seprately from the other effects above.
+* Bit 13 sets if the object uses 8bpp (bit set), or 4bpp (bit cleared).
+* Bits 14 and 15 set the "shape" of the object. The exact dimensions also depend on the "size" set in attribute 1
+  * 0 is square
+  * 1 is wider
+  * 2 is taller
+  * 3 is not allowed.
 
-TODO
+| (WxH) | Size 0 | Size 1 | Size 2 | Size 3 |
+|:-:|:-:|:-:|:-:|:-:|
+| Shape 0 | 8x8 | 16x16 | 32x32 | 64x64 |
+| Shape 1 | 16x8 | 32x8 | 32x16 | 64x32 |
+| Shape 2 | 8x16 | 8x32 | 16x32 | 32x64 |
 
 ### Object Attribute 1
 
-| Bit(s) | Setting |
-|:-:|:-|
-| 0-7  | X coordinate (`0..=511`) |
-| 9-13 | Affine entry index (affine only) |
-| 12   | Horizontal flip flag (non-affine) |
-| 13   | Vertical flip flag (non-affine) |
-| 14-15| Size: 0 to 4 (see below) |
-
-TODO
+* Bits 0 through 8 are the X coordinate of the *top-left corner* of the object.
+  This works basically the same as with the Y coordinate, but the screen is 260 pixels wide so 9 bits are used.
+* Bits 8 through 13 depend on if the object is using affine rendering or not.
+  * When affine (or double sized affine) rendering is used, they set the index of the affine entry used.
+  * Otherwise Bit 12 sets horizontal flip and Bit 13 set vertical flip.
+* Bits 14 and 15 set the size of the sprite.
 
 ### Object Attribute 2
 
-| Bit(s) | Setting |
-|:-:|:-|
-| 0-9  | Base Tile ID |
-| 10-11| Priority (lower is closer to the viewer) |
-| 12-15| Palbank index (if 4bpp) |
+* Bits 0 through 9 set the base tile index of the object.
+  As mentioned above, in video modes 3, 4, and 5 this needs to be 512 or more.
+* Bits 10 and 11 are the "priority" value.
+  Lower priority objects and layers are sorted closer to the viewer, and so they are what's seen if they overlap something farther away.
+  Within a given priority layer, objects always draw over backgrounds, and lower index objects/backgrounds draw over higher index ones.
+* Bits 12 through 15 set the palette bank the object uses if it's using 4bpp.
 
-TODO
+### Object Rendering Time
+
+There's a limit to how many objects can be drawn per scanline.
+It's not a specific number of objects, instead it's a number of *cycles* that can be spent per scanline.
+
+* When the "Unlocked H-blank" bit is **clear** in `DISPCNT` you get 1210 cycles (304 * 4 - 6)
+* When the "Unlocked H-blank" bit is **set** in `DISPCNT` you get 954 cycles (240 * 4 - 6)
+
+The number of cycles each object consumes depends on the object's horizontal size:
+
+* Normal objects consume `width` cycles.
+* Affine objects consume `2 * width + 10` cycles.
+
+Objects with a lower index are processed first.
+If you run out of object rendering cycles any unprocessed objects won't be drawn.
 
 ## Showing Static Objects
 
 ## Moving The Objects Way Too Fast
 
 ## Waiting For Vertical Blank
+
+## Shadow OAM
+
