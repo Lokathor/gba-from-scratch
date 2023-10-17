@@ -1,0 +1,792 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Objects / Sprites - GBA From Scratch With Ferris</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Open Graph tags-->
+        <meta name="og:site_name" content="GBA From Scratch With Ferris" />
+        <meta name="og:title" content="Objects / Sprites" />
+        <meta name="og:description" content="" />
+        
+        <!-- Twitter meta tags -->
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@lokathor" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="ex1.html"><strong aria-hidden="true">1.</strong> A Basic Executable</a></li><li class="chapter-item expanded "><a href="ex2.html"><strong aria-hidden="true">2.</strong> User Input</a></li><li class="chapter-item expanded "><a href="ex3.html" class="active"><strong aria-hidden="true">3.</strong> Objects / Sprites</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">GBA From Scratch With Ferris</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/Lokathor/gba-from-scratch" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="objects--sprites"><a class="header" href="#objects--sprites">Objects / Sprites</a></h1>
+<p>Now that we can get user input there's a <em>lot</em> of things that we could learn about next.
+Probably we should focus on how to improve our drawing abilities.</p>
+<p>Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called &quot;OBJ&quot; for short).
+The background layers let you draw a few &quot;big&quot; things (128x128 or bigger), and the objects let you draw many &quot;small&quot; things (64x64 or less).</p>
+<p>The objects have a fairly consistent behavior, while the four background layers behave differently depending on the &quot;video mode&quot; that you set in the display control.
+That's reason enough to focus on the objects first.</p>
+<h3 id="are-they-objects-or-are-they-sprites"><a class="header" href="#are-they-objects-or-are-they-sprites">Are They Objects Or Are They Sprites?</a></h3>
+<p>The objects are sometimes called &quot;sprites&quot;.
+GBATEK calls them objects, and mGBA (v0.10 at least) calls them sprites.
+Some people care about the difference between the two terms, but I don't.
+I'm just going to say &quot;object&quot; most of the time in this series because the data for them is called the &quot;object active memory&quot;.</p>
+<h2 id="display-control"><a class="header" href="#display-control">Display Control</a></h2>
+<p>We've already seen that the display control has a &quot;forced blank&quot; bit.
+Most of the other bits are for background control stuff, but since some of them affect object display we'll just cover that right now.</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Bit(s)</th><th style="text-align: left">Setting</th></tr></thead><tbody>
+<tr><td style="text-align: center">0-2</td><td style="text-align: left">Video Mode</td></tr>
+<tr><td style="text-align: center">3</td><td style="text-align: left">(Unused in GBA mode)</td></tr>
+<tr><td style="text-align: center">4</td><td style="text-align: left">Frame Select</td></tr>
+<tr><td style="text-align: center">5</td><td style="text-align: left">Unlocked H-blank</td></tr>
+<tr><td style="text-align: center">6</td><td style="text-align: left">Linear object tile mapping</td></tr>
+<tr><td style="text-align: center">7</td><td style="text-align: left">Forced Blank</td></tr>
+<tr><td style="text-align: center">8</td><td style="text-align: left">Enable Background 0</td></tr>
+<tr><td style="text-align: center">9</td><td style="text-align: left">Enable Background 1</td></tr>
+<tr><td style="text-align: center">10</td><td style="text-align: left">Enable Background 2</td></tr>
+<tr><td style="text-align: center">11</td><td style="text-align: left">Enable Background 3</td></tr>
+<tr><td style="text-align: center">12</td><td style="text-align: left">Enable Objects</td></tr>
+<tr><td style="text-align: center">13</td><td style="text-align: left">Window 0 Display Flag</td></tr>
+<tr><td style="text-align: center">14</td><td style="text-align: left">Window 1 Display Flag</td></tr>
+<tr><td style="text-align: center">15</td><td style="text-align: left">OBJ Window Display Flag</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>Video Mode:</strong> This sets which mode the four background layers will operate with. Despite this being a 3-bit field, only modes 0 through 5 give a useful display. Modes 6 and 7 cause garbage output.</li>
+<li><strong>Frame Select:</strong> Affects which bitmap frame is used in video mode 4 or 5.</li>
+<li><strong>Unlocked H-blank:</strong> GBATEK calls this &quot;H-Blank Interval Free&quot;, and mGBA's debug controls call this &quot;Unlocked H-blank&quot;. This bit affects what you can do during the &quot;horizontal blank&quot; time between each scanline being shown, but when it's on fewer objects can be drawn. We won't be doing any per-scanline drawing for now, so we'll leave it off by default.</li>
+<li><strong>Linear object tile mapping:</strong> This affects how we lay out the tiles for multi-tile objects. We'll talk about the details of this in just a moment.</li>
+<li><strong>Forced Blank:</strong> Hey we know about this bit. When it's on, the display won't access any memory and will just output white pixels any time it would have rendered a pixel normally.</li>
+<li><strong>Enable Background:</strong> These four bits set if we want each of the four background layers on. For now we don't care.</li>
+<li><strong>Enable Objects:</strong> This bit sets the objects to be displayed.</li>
+<li><strong>Window Flags:</strong> These three bits affect the &quot;window&quot; special graphical feature. We'll ignore these bits for now.</li>
+</ul>
+<p>I'm going to use the <code>bitfrob</code> crate to get some bit manipulation utilities.</p>
+<pre><code>&gt; cargo add bitfrob
+    Updating crates.io index
+      Adding bitfrob v1.3.0 to dependencies.
+             Features:
+             - track_caller
+    Updating crates.io index
+</code></pre>
+<p>Now we can give a type to our display control value, as well as just enough methods to get started.
+Unlike with our <code>Color</code> type, with the <code>DisplayControl</code> we want to completely prevent an invalid video mode from being set, so we'll keep the <code>u16</code> that we're wrapping as a private field.
+Then we just have one &quot;builder&quot; method for each bit or group of bits that we want to be able to change.
+To start we can skip all the background related bits, so we'll only need three builders.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+use bitfrob::u16_with_bit;
+
+pub const DISPCNT: VolAddress&lt;DisplayControl, Safe, Safe&gt; =
+  unsafe { VolAddress::new(0x0400_0000) };
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct DisplayControl(u16);
+impl DisplayControl {
+  #[inline]
+  pub const fn new() -&gt; Self {
+    Self(0)
+  }
+  #[inline]
+  pub const fn with_linear_obj_tiles(self, linear: bool) -&gt; Self {
+    Self(u16_with_bit(6, self.0, linear))
+  }
+  #[inline]
+  pub const fn with_forced_blank(self, blank: bool) -&gt; Self {
+    Self(u16_with_bit(7, self.0, blank))
+  }
+  #[inline]
+  pub const fn with_objects(self, objects: bool) -&gt; Self {
+    Self(u16_with_bit(12, self.0, objects))
+  }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>This will require updates to both <code>ex2.rs</code> and <code>ex3.rs</code>.</p>
+<ul>
+<li>For example 2, instead of writing <code>0</code> we'd write <code>DisplayControl::new()</code> instead.</li>
+<li>For example 3, we want to enable object display, since we're about to start showing some objects.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust">// in ex3.rs
+
+const JUST_SHOW_OBJECTS: DisplayControl =
+  DisplayControl::new().with_objects(true);
+
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  DISPCNT.write(JUST_SHOW_OBJECTS);
+
+  loop {
+    let k = KEYINPUT.read();
+    BACKDROP.write(if k.a() { Color::RED } else { Color::GREEN })
+  }
+}</code></pre></pre>
+<p>For now that's all we need to do for the display control.</p>
+<h2 id="object-palette"><a class="header" href="#object-palette">Object Palette</a></h2>
+<p>Objects always need to use &quot;paletted&quot; color.
+Instead of each pixel within the object's image holding a full color value, it just holds an index into the palette.
+This allows each pixel to only need 4 or 8 bits each, instead of the 16 bits needed for a complete color.</p>
+<p>The palette for objects starts at <code>0x0500_0200</code>, and it's 256 entries long.
+Each object can use 8 bits per pixel (8bpp) or 4 bits per pixel (4bpp).</p>
+<ul>
+<li>When an object is set for 8bpp each non-zero pixel value is the 8-bit index into the object palette.
+A pixel value of 0 means that the object is transparent in that pixel.
+This allows for up to 255 colors to be used within a single object.</li>
+<li>When an object is set for 4bpp each non-zero pixel value is <em>the low half</em> of the full index value.
+A second setting within the object's attributes determine the upper half of the index value.
+This effectively splits the palette memory into 16 &quot;palbank&quot; groupings.
+As with 8bpp objects, a pixel value of 0 makes a transparent pixel.
+This allows for up to 15 colors within a single object.</li>
+</ul>
+<p>You might notice that index 0 of the object palette isn't ever used by either mode.
+The memory itself exists for consistency, but the GBA will never use the color value in that position.
+Call it a free global variable for your own personal use, if you want.</p>
+<p>Since we have a series of color values instead of just a single color value,
+this time we'll declare the object palette as a <a href="https://docs.rs/voladdress/latest/voladdress/struct.VolBlock.html">VolBlock</a> instead of a <code>VolAddress</code>.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub const OBJ_PALETTE: VolBlock&lt;Color, Safe, Safe, 256&gt; =
+  unsafe { VolBlock::new(0x0500_0200) };
+<span class="boring">}</span></code></pre></pre>
+<p>A <code>VolBlock</code> works mostly like an array does.
+We call <code>OBJ_PALETTE.index(i)</code> to get a particular <code>VolAddress</code>, and then we can read or write that address.
+We could also use <code>get</code> if we want to do an optional lookup, or we could iterate the block, etc.</p>
+<p>First let's make some more named color constants.
+We'll name each of the 8 colors you get when each of the three color channels is either no-intensity or full-intensity.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+impl Color {
+  pub const BLACK: Self = Self::rgb(0, 0, 0);
+  pub const BLUE: Self = Self::rgb(0, 0, 31);
+  pub const GREEN: Self = Self::rgb(0, 31, 0);
+  pub const CYAN: Self = Self::rgb(0, 31, 31);
+  pub const RED: Self = Self::rgb(31, 0, 0);
+  pub const MAGENTA: Self = Self::rgb(31, 0, 31);
+  pub const YELLOW: Self = Self::rgb(31, 31, 0);
+  pub const WHITE: Self = Self::rgb(31, 31, 31);
+  // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Now we can set up a backdrop color and two different palette entries.</p>
+<pre><pre class="playground"><code class="language-rust">// in ex3.rs
+
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  DISPCNT.write(JUST_SHOW_OBJECTS);
+
+  loop {}
+}</code></pre></pre>
+<p>If we run the example in mGBA we can check our work using the debug utilities.
+In the menu, &quot;Tools -&gt; Game State Views -&gt; View Palette...&quot; will open a dialog showing all the background and object palette info.</p>
+<ul>
+<li>The backdrop color will show up in the 0th entry of the background palette.</li>
+<li>The two object palette colors will be in positions 1 and 2 of the top row.</li>
+</ul>
+<p>Each row of the palette is shown 16 colors at a time, so it's easy to tell what's happening in both 8bpp and 4bpp modes.</p>
+<p>That should be enough palette setup to continue with the tutorial.</p>
+<h2 id="object-tile-memory"><a class="header" href="#object-tile-memory">Object Tile Memory</a></h2>
+<p>First, what is a tile exactly:</p>
+<ul>
+<li>A tile is an 8x8 square of palette indexes.</li>
+<li>A palette index can be either 4 bits per pixel (4bpp) or 8 bits per pixel (8bpp). This is the &quot;bit depth&quot; of the indexes.</li>
+<li>The indexes store one row at a time, left to right, top to bottom.</li>
+</ul>
+<p>So we might have the following Rust constants</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub const PIXELS_PER_TILE: usize = 8 * 8;
+pub const BITS_PER_BYTE: usize = 8;
+pub const SIZE_OF_TILE4: usize = (PIXELS_PER_TILE * 4) / BITS_PER_BYTE;
+pub const SIZE_OF_TILE8: usize = (PIXELS_PER_TILE * 8) / BITS_PER_BYTE;
+<span class="boring">}</span></code></pre></pre>
+<p>Also, there's 32K of object tile RAM.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+macro_rules! kilobytes {
+  ($bytes:expr) =&gt; {
+    $bytes * 1024
+  };
+}
+
+pub const SIZE_OF_OBJ_TILE_MEM: usize = kilobytes!(32);
+<span class="boring">}</span></code></pre></pre>
+<p>Now we know how big everything is, in bytes.
+However, the GBA's video memory does <strong>NOT</strong> work right with individual byte writes.
+We can cover the details another time, but with video memory you always have to write in 16-bit or 32-bit chunks.
+Also, the GBA is simply much faster at transferring bulk data around when it's aligned to 4.
+Data aligned to 4 can be copied one or more <code>u32</code> values at time (one or more &quot;words&quot; in ARM terms).
+Being more aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
+Tiles, particularly if we've got dozens or hundreds of them, count as &quot;big enough to care about alignment&quot;.
+This means that instead of modeling tile data as being arrays of <code>u8</code>, we'll use smaller arrays of <code>u32</code>, which will keep the data aligned to 4.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub const SIZE_OF_U32: usize = core::mem::size_of::&lt;u32&gt;();
+pub const TILE4_WORD_COUNT: usize = SIZE_OF_TILE4 / SIZE_OF_U32;
+pub const TILE8_WORD_COUNT: usize = SIZE_OF_TILE8 / SIZE_OF_U32;
+pub const OBJ_TILE_MEM_WORD_COUNT: usize = SIZE_OF_OBJ_TILE_MEM / SIZE_OF_U32;
+<span class="boring">}</span></code></pre></pre>
+<p>Which lets us declare the block of <code>u32</code> values where our object tile data goes.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub const OBJ_TILES_U32: VolBlock&lt;u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT&gt; =
+  unsafe { VolBlock::new(0x0601_0000) };
+<span class="boring">}</span></code></pre></pre>
+<p>Here's where things get kinda weird.
+An object's attributes (most of which we'll cover lower down) include a &quot;Tile ID&quot; for the base tile of the object.
+These tile id values are used as a 32 byte index, regardless of if the object uses 4bpp or 8bpp drawing.
+This means that they line up perfectly with a 4bpp view of the tile data, and we get 1024 IDs.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub type Tile4 = [u32; TILE4_WORD_COUNT];
+pub const OBJ_TILE4: VolBlock&lt;Tile4, Safe, Safe, 1024&gt; =
+  unsafe { VolBlock::new(0x0601_0000) };
+<span class="boring">}</span></code></pre></pre>
+<p>But with 8bpp objects we end up in a pickle.
+We could use a <a href="https://docs.rs/voladdress/latest/voladdress/struct.VolSeries.html">VolSeries</a>, which is an alternative to the <code>VolBlock</code> type, for when the stride and the element size aren't the same.
+The <code>VolSeries</code> type is mostly intended for when the stride is <em>bigger</em> than the element size, but the math will work out either way.
+Note that since 8bpp tiles are twice as big we have to cut down the number of tiles from 1024 to 1023 so that using the last index doesn't go out of bounds.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub type Tile8 = [u32; TILE8_WORD_COUNT];
+pub const OBJ_TILE8: VolSeries&lt;Tile8, Safe, Safe, 1023, 32&gt; =
+  unsafe { VolSeries::new(0x0601_0000) };
+<span class="boring">}</span></code></pre></pre>
+<p>And, well, it looks kinda weird every time I look at the code but... that's how the hardware works.
+It's the ultimate arbiter of what's correct, so sometimes you gotta just go with it.</p>
+<p>We can always think about this more later, and maybe improve it then.
+For now it's enough that we've got the right addresses at all.</p>
+<p><strong>One final note:</strong> In video modes 3, 4, and 5 the lower half of the object tile region instead gets used as part of the background.
+In this case, only object tile index values 512 and above are usable for object display.</p>
+<h2 id="object-attribute-memory"><a class="header" href="#object-attribute-memory">Object Attribute Memory</a></h2>
+<p>Separate from the object tile memory, there's also the Object Attribute Memory (OAM) region.
+This has space for 128 &quot;attribute&quot; entries, which defines how the objects are shown.</p>
+<p>Each attribute needs 48 bits.
+This is an unfortunate number of bits, because it's not a clean power of 2.
+Normally we refer to each attribute entry as having three <code>u16</code> attributes just called 0, 1, and 2.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Clone, Copy, PartialEq, Eq, Default)]
+#[repr(transparent)]
+pub struct ObjAttr0(pub u16);
+
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
+#[repr(transparent)]
+pub struct ObjAttr1(pub u16);
+
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
+#[repr(transparent)]
+pub struct ObjAttr2(pub u16);
+<span class="boring">}</span></code></pre></pre>
+<p>In between each attribute entry is <em>part of</em> an affine entry.
+That's right, just a part of an affine entry.
+A full affine entry is four <code>i16</code> values (called A, B, C, and D).
+There's one <code>i16</code> affine value per three <code>u16</code> attribute values.
+The memory looks kinda like this.</p>
+<ul>
+<li>obj0.attr0</li>
+<li>obj0.attr1</li>
+<li>obj0.attr2</li>
+<li>affine0.a</li>
+<li>obj1.attr0</li>
+<li>obj1.attr1</li>
+<li>obj1.attr2</li>
+<li>affine0.b</li>
+<li>obj2.attr0</li>
+<li>obj2.attr1</li>
+<li>obj2.attr2</li>
+<li>affine0.c</li>
+<li>obj3.attr0</li>
+<li>obj3.attr1</li>
+<li>obj3.attr2</li>
+<li>affine0.d</li>
+</ul>
+<p>And then that pattern repeats 32 times.
+It's a little strange, but the hardware does what it does.</p>
+<p>We can use use several <code>VolSeries</code> declarations to model this.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+pub const OBJ_ATTRS_0: VolSeries&lt;ObjAttr0, Safe, Safe, 128, 64&gt; =
+  unsafe { VolSeries::new(0x0700_0000) };
+pub const OBJ_ATTRS_1: VolSeries&lt;ObjAttr1, Safe, Safe, 128, 64&gt; =
+  unsafe { VolSeries::new(0x0700_0000 + 2) };
+pub const OBJ_ATTRS_2: VolSeries&lt;ObjAttr2, Safe, Safe, 128, 64&gt; =
+  unsafe { VolSeries::new(0x0700_0000 + 4) };
+<span class="boring">}</span></code></pre></pre>
+<p>Alternately, we could group the attributes into a single struct and view things that way.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in lib.rs
+
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
+#[repr(C)]
+pub struct ObjAttr(pub ObjAttr0, pub ObjAttr1, pub ObjAttr2);
+
+pub const OBJ_ATTRS: VolSeries&lt;ObjAttr, Safe, Safe, 128, 64&gt; =
+  unsafe { VolSeries::new(0x0700_0000) };
+<span class="boring">}</span></code></pre></pre>
+<p>Using the <code>ObjAttr</code> type and <code>OBJ_ATTRS</code> series would make it so that all three object attribute fields get accessed.
+If you're only intending to update the position of an object (in attributes 0 and 1) without touching attribute 2, then maybe you'd care.
+It's pretty unlikely to matter, but maybe.</p>
+<p>Let's go over the actual properties within each object attribute field.</p>
+<h3 id="object-attribute-0"><a class="header" href="#object-attribute-0">Object Attribute 0</a></h3>
+<ul>
+<li>Bits 0 through 7 are the Y coordinate of the <em>top-left corner</em> of the object.
+The screen is 160 pixels tall, and the coordinates wrap.
+If you want something to appear to move up past the top of the screen, then wrap the Y value around.
+Alternately, you can do the position math using signed values and then <code>as</code> cast the value to unsigned.</li>
+<li>Bits 8 and 9 set what mGBA calls the &quot;transform&quot; of the object:
+<ul>
+<li>0 is no transform.</li>
+<li>1 is affine rendering. Which affine entry is used is set in attribute 1.</li>
+<li>2 is no transform and the object not drawn (it's &quot;disabled&quot;).</li>
+<li>3 is just like 1 but the object is rendered with double size.</li>
+</ul>
+</li>
+<li>Bits 10 and 11 set the special effect mode:
+<ul>
+<li>0 is no special effect.</li>
+<li>1 is alpha blending.</li>
+<li>2 is window masking. The object isn't shown, but acts as part of the object window mask.</li>
+<li>3 is not allowed.</li>
+</ul>
+</li>
+<li>Bit 12 sets if the object uses the Mosaic special effect.
+This can be enabled/disabled seprately from the other effects above.</li>
+<li>Bit 13 sets if the object uses 8bpp (bit set), or 4bpp (bit cleared).</li>
+<li>Bits 14 and 15 set the &quot;shape&quot; of the object. The exact dimensions also depend on the &quot;size&quot; set in attribute 1
+<ul>
+<li>0 is square</li>
+<li>1 is wider</li>
+<li>2 is taller</li>
+<li>3 is not allowed.</li>
+</ul>
+</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">(WxH)</th><th style="text-align: center">Size 0</th><th style="text-align: center">Size 1</th><th style="text-align: center">Size 2</th><th style="text-align: center">Size 3</th></tr></thead><tbody>
+<tr><td style="text-align: center">Shape 0</td><td style="text-align: center">8x8</td><td style="text-align: center">16x16</td><td style="text-align: center">32x32</td><td style="text-align: center">64x64</td></tr>
+<tr><td style="text-align: center">Shape 1</td><td style="text-align: center">16x8</td><td style="text-align: center">32x8</td><td style="text-align: center">32x16</td><td style="text-align: center">64x32</td></tr>
+<tr><td style="text-align: center">Shape 2</td><td style="text-align: center">8x16</td><td style="text-align: center">8x32</td><td style="text-align: center">16x32</td><td style="text-align: center">32x64</td></tr>
+</tbody></table>
+</div>
+<h3 id="object-attribute-1"><a class="header" href="#object-attribute-1">Object Attribute 1</a></h3>
+<ul>
+<li>Bits 0 through 8 are the X coordinate of the <em>top-left corner</em> of the object.
+This works basically the same as with the Y coordinate, but the screen is 260 pixels wide so 9 bits are used.</li>
+<li>Bits 8 through 13 depend on if the object is using affine rendering or not.
+<ul>
+<li>When affine (or double sized affine) rendering is used, they set the index of the affine entry used.</li>
+<li>Otherwise Bit 12 sets horizontal flip and Bit 13 set vertical flip.</li>
+</ul>
+</li>
+<li>Bits 14 and 15 set the size of the sprite.</li>
+</ul>
+<h3 id="object-attribute-2"><a class="header" href="#object-attribute-2">Object Attribute 2</a></h3>
+<ul>
+<li>Bits 0 through 9 set the base tile index of the object.
+As mentioned above, in video modes 3, 4, and 5 this needs to be 512 or more.</li>
+<li>Bits 10 and 11 are the &quot;priority&quot; value.
+Lower priority objects and layers are sorted closer to the viewer, and so they are what's seen if they overlap something farther away.
+Within a given priority layer, objects always draw over backgrounds, and lower index objects/backgrounds draw over higher index ones.</li>
+<li>Bits 12 through 15 set the palette bank the object uses if it's using 4bpp.</li>
+</ul>
+<h3 id="object-rendering-time"><a class="header" href="#object-rendering-time">Object Rendering Time</a></h3>
+<p>There's a limit to how many objects can be drawn per scanline, but it's not a specific number of objects.
+Instead, the OAM engine has a buffer that's as wide as the screen, and there's a time limit per scanline on filling the buffer.</p>
+<ul>
+<li>When the &quot;Unlocked H-blank&quot; bit is <strong>clear</strong> in <code>DISPCNT</code> you get 1210 cycles (304 * 4 - 6)</li>
+<li>When the &quot;Unlocked H-blank&quot; bit is <strong>set</strong> in <code>DISPCNT</code> you get 954 cycles (240 * 4 - 6)</li>
+</ul>
+<p>The number of cycles each object consumes depends on the object's horizontal size:</p>
+<ul>
+<li>Normal objects consume <code>width</code> cycles.</li>
+<li>Affine objects consume <code>2 * width + 10</code> cycles.</li>
+</ul>
+<p>Objects are processed by their index order.
+Objects not on the current scanline, horizontally/vertically off-screen, or that are &quot;disabled&quot; as their attribute 0 transform, are skipped in rendering but still take two cycles to process.
+Even when an object won't be drawn on the current scanline the OAM engine has to look at the attributes to know that.
+If not all objects are handled and time runs out then any unprocessed objects simply won't be drawn on this scanline.</p>
+<h2 id="showing-static-objects"><a class="header" href="#showing-static-objects">Showing Static Objects</a></h2>
+<p>Armed with all this knowledge we can probably show a static object.</p>
+<p>First we want to set at least one tile in the object tile memory to some sort of pattern.
+If we write a hex <code>u32</code> literal, then each digit of the hex value will be 4 bits, so we can make a 4bpp tile pretty easy.
+One catch is that the indexes fill the tile from left to right, but we write numbers in code with the low-place-value digits on the right.
+So our &quot;tile&quot; as a <code>u32</code> literal will be left-right flipped from how it'll appear on the GBA:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// A tile with an extra notch on the upper left.
+#[rustfmt::skip]
+const TILE_UP_LEFT: [u32; 8] = [
+  // Each hex digit is one 4bpp index value.
+  // Also, the image is left-right flipped from how it
+  // looks in code because the GBA is little-endian!
+  0x11111111,
+  0x12222111,
+  0x12222111,
+  0x12222221,
+  0x12222221,
+  0x12222221,
+  0x12222221,
+  0x11111111,
+];
+<span class="boring">}</span></code></pre></pre>
+<p>And we can copy the data into object tile 1 in our <code>main</code> function.</p>
+<pre><pre class="playground"><code class="language-rust">#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+
+  DISPCNT.write(JUST_SHOW_OBJECTS);
+
+  loop {}
+}</code></pre></pre>
+<p>We can make other similar tiles too, one for each corner notch.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(3).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(4).write(TILE_DOWN_RIGHT);
+<span class="boring">}</span></code></pre></pre>
+<p>If we show an 8x8 object using object tile 1, then we'll see an upper-left square.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>  OBJ_ATTRS.index(0).write(ObjAttr(ObjAttr0(0), ObjAttr1(0), ObjAttr2(1)));
+<span class="boring">}</span></code></pre></pre>
+<p>And if we make it wider we can see an upper left and upper right square too.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>  OBJ_ATTRS.index(0).write(ObjAttr(
+    ObjAttr0(1 &lt;&lt; 14),
+    ObjAttr1(0),
+    ObjAttr2(1),
+  ));
+<span class="boring">}</span></code></pre></pre>
+<p>But when we make it taller instead, we see... just one tile?
+Why isn't there a second tile drawn below the first?</p>
+<p>This is that &quot;Linear object tile mapping&quot; flag from way back with the Display Control.
+It defaults to <em>off</em>, so by default when we want to have an object more than 8 pixels tall, the next row of the object will use +32 indexes from the previous row.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>  // using `x + 32*y` to get the index
+  OBJ_TILE4.index(1 + 32*0).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2 + 32*0).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(1 + 32*1).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(2 + 32*1).write(TILE_DOWN_RIGHT);
+<span class="boring">}</span></code></pre></pre>
+<p>Alternately, we can set up our display control to use the linear object tile system and then just fill tiles 1 to 4 like they're a normal array.</p>
+<pre><pre class="playground"><code class="language-rust">const JUST_OBJECTS_LINEAR: DisplayControl =
+  DisplayControl::new().with_objects(true).with_linear_obj_tiles(true);
+
+#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(3).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(4).write(TILE_DOWN_RIGHT);
+
+  OBJ_ATTRS.index(0).write(ObjAttr(
+    ObjAttr0(0),       // square shape
+    ObjAttr1(1 &lt;&lt; 14), // size 1
+    ObjAttr2(1),       // base tile 1
+  ));
+
+  DISPCNT.write(JUST_OBJECTS_LINEAR);
+
+  loop {}
+}</code></pre></pre>
+<p>It's really up to you.
+As long as you're consistent, either way will work.</p>
+<p>Of course, also you'd want to have a lot of methods for easily getting/setting the right bits of each attribute value.
+I'll put those in to <code>lib.rs</code> right now, but I'm not gonna show them all here in the tutorial text.
+They all do just what you'd expect based on the <code>DisplayControl</code> type.</p>
+<p>For the <code>ObjAttr</code> type we can have methods that dispatch to the correct inner field's method.
+On the <code>x</code> and <code>y</code> properties we can make them take <code>i16</code> instaed of <code>u16</code> and then just cast inside the setter.
+The user will probably <em>want</em> to support signed positions so that stuff can go up off the screen and left off the screen.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl ObjAttr {
+  #[inline]
+  pub const fn new() -&gt; Self {
+    Self(ObjAttr0::new(), ObjAttr1::new(), ObjAttr2::new())
+  }
+  #[inline]
+  pub const fn with_size(self, size: u16) -&gt; Self {
+    Self(self.0, self.1.with_size(size), self.2)
+  }
+  #[inline]
+  pub const fn with_tile(self, tile: u16) -&gt; Self {
+    Self(self.0, self.1, self.2.with_tile(tile))
+  }
+  #[inline]
+  pub const fn with_x(self, x: i16) -&gt; Self {
+    Self(self.0, self.1.with_x(x), self.2)
+  }
+  #[inline]
+  pub const fn with_y(self, y: i16) -&gt; Self {
+    Self(self.0.with_y(y), self.1, self.2)
+  }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>And our final <code>main</code> goes like this:</p>
+<pre><pre class="playground"><code class="language-rust">#[no_mangle]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(3).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(4).write(TILE_DOWN_RIGHT);
+
+  let obj = ObjAttr::new().with_size(1).with_tile(1).with_x(10).with_y(23);
+  OBJ_ATTRS.index(0).write(obj);
+
+  DISPCNT.write(JUST_OBJECTS_LINEAR);
+
+  loop {}
+}</code></pre></pre>
+<p>which displays a little square deal thing</p>
+<p><img src="ex3-working-16x16.png" alt="ex3_working_16x16" /></p>
+<p>That's it for now.
+Next time we'll see about making our square move around and stuff.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ex2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ex2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
