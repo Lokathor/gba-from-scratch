@@ -1,7 +1,7 @@
 #![no_std]
 #![feature(naked_functions)]
 
-use bitfrob::u16_with_bit;
+use bitfrob::{u16_get_bit, u16_with_bit, u16_with_value};
 use voladdress::{Safe, VolAddress, VolBlock, VolSeries};
 
 macro_rules! kilobytes {
@@ -43,17 +43,55 @@ pub type Tile8 = [u32; TILE8_WORD_COUNT];
 pub const OBJ_TILE8: VolSeries<Tile8, Safe, Safe, 1023, 32> =
   unsafe { VolSeries::new(0x0601_0000) };
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(transparent)]
 pub struct ObjAttr0(pub u16);
+impl ObjAttr0 {
+  #[inline]
+  pub const fn new() -> Self {
+    Self(0)
+  }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+  #[inline]
+  pub const fn with_y(self, y: i16) -> Self {
+    Self(u16_with_value(0, 7, self.0, y as u16))
+  }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(transparent)]
 pub struct ObjAttr1(pub u16);
+impl ObjAttr1 {
+  #[inline]
+  pub const fn new() -> Self {
+    Self(0)
+  }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+  #[inline]
+  pub const fn with_size(self, size: u16) -> Self {
+    Self(u16_with_value(14, 15, self.0, size))
+  }
+
+  #[inline]
+  pub const fn with_x(self, x: i16) -> Self {
+    Self(u16_with_value(0, 9, self.0, x as u16))
+  }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(transparent)]
 pub struct ObjAttr2(pub u16);
+impl ObjAttr2 {
+  #[inline]
+  pub const fn new() -> Self {
+    Self(0)
+  }
+
+  #[inline]
+  pub const fn with_tile(self, tile: u16) -> Self {
+    Self(u16_with_value(0, 9, self.0, tile))
+  }
+}
 
 pub const OBJ_ATTRS_0: VolSeries<ObjAttr0, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000) };
@@ -62,9 +100,31 @@ pub const OBJ_ATTRS_1: VolSeries<ObjAttr1, Safe, Safe, 128, 64> =
 pub const OBJ_ATTRS_2: VolSeries<ObjAttr2, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000 + 4) };
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(C)]
 pub struct ObjAttr(pub ObjAttr0, pub ObjAttr1, pub ObjAttr2);
+impl ObjAttr {
+  #[inline]
+  pub const fn new() -> Self {
+    Self(ObjAttr0::new(), ObjAttr1::new(), ObjAttr2::new())
+  }
+  #[inline]
+  pub const fn with_size(self, size: u16) -> Self {
+    Self(self.0, self.1.with_size(size), self.2)
+  }
+  #[inline]
+  pub const fn with_tile(self, tile: u16) -> Self {
+    Self(self.0, self.1, self.2.with_tile(tile))
+  }
+  #[inline]
+  pub const fn with_x(self, x: i16) -> Self {
+    Self(self.0, self.1.with_x(x), self.2)
+  }
+  #[inline]
+  pub const fn with_y(self, y: i16) -> Self {
+    Self(self.0.with_y(y), self.1, self.2)
+  }
+}
 
 pub const OBJ_ATTRS: VolSeries<ObjAttr, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000) };
@@ -95,25 +155,25 @@ pub struct KeyInput(pub u16);
 #[rustfmt::skip]
 impl KeyInput {
   #[inline]
-  pub const fn a(self) -> bool { (self.0 & (1<<0)) == 0 }
+  pub const fn a(self) -> bool { !u16_get_bit(0, self.0) }
   #[inline]
-  pub const fn b(self) -> bool { (self.0 & (1<<1)) == 0 }
+  pub const fn b(self) -> bool { !u16_get_bit(1, self.0) }
   #[inline]
-  pub const fn select(self) -> bool { (self.0 & (1<<2)) == 0 }
+  pub const fn select(self) -> bool { !u16_get_bit(2, self.0) }
   #[inline]
-  pub const fn start(self) -> bool { (self.0 & (1<<3)) == 0 }
+  pub const fn start(self) -> bool { !u16_get_bit(3, self.0) }
   #[inline]
-  pub const fn right(self) -> bool { (self.0 & (1<<4)) == 0 }
+  pub const fn right(self) -> bool { !u16_get_bit(4, self.0) }
   #[inline]
-  pub const fn left(self) -> bool { (self.0 & (1<<5)) == 0 }
+  pub const fn left(self) -> bool { !u16_get_bit(5, self.0) }
   #[inline]
-  pub const fn up(self) -> bool { (self.0 & (1<<6)) == 0 }
+  pub const fn up(self) -> bool { !u16_get_bit(6, self.0) }
   #[inline]
-  pub const fn down(self) -> bool { (self.0 & (1<<7)) == 0 }
+  pub const fn down(self) -> bool { !u16_get_bit(7, self.0) }
   #[inline]
-  pub const fn r(self) -> bool { (self.0 & (1<<8)) == 0 }
+  pub const fn r(self) -> bool { !u16_get_bit(8, self.0) }
   #[inline]
-  pub const fn l(self) -> bool { (self.0 & (1<<9)) == 0 }
+  pub const fn l(self) -> bool { !u16_get_bit(9, self.0) }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

@@ -304,15 +304,15 @@ This is an unfortunate number of bits, because it's not a clean power of 2.
 Normally we refer to each attribute entry as having three `u16` attributes just called 0, 1, and 2.
 
 ```rust
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(transparent)]
 pub struct ObjAttr0(pub u16);
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(transparent)]
 pub struct ObjAttr1(pub u16);
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(transparent)]
 pub struct ObjAttr2(pub u16);
 ```
@@ -361,7 +361,7 @@ Alternately, we could group the attributes into a single struct and view things 
 ```rust
 // in lib.rs
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 #[repr(C)]
 pub struct ObjAttr(pub ObjAttr0, pub ObjAttr1, pub ObjAttr2);
 
@@ -384,7 +384,7 @@ Let's go over the actual properties within each object attribute field.
 * Bits 8 and 9 set what mGBA calls the "transform" of the object:
   * 0 is no transform.
   * 1 is affine rendering. Which affine entry is used is set in attribute 1.
-  * 2 is no transform and the object not drawn (it's "invisible").
+  * 2 is no transform and the object not drawn (it's "disabled").
   * 3 is just like 1 but the object is rendered with double size.
 * Bits 10 and 11 set the special effect mode:
   * 0 is no special effect.
@@ -426,8 +426,8 @@ Let's go over the actual properties within each object attribute field.
 
 ### Object Rendering Time
 
-There's a limit to how many objects can be drawn per scanline.
-It's not a specific number of objects, instead it's a number of *cycles* that can be spent per scanline.
+There's a limit to how many objects can be drawn per scanline, but it's not a specific number of objects.
+Instead, the OAM engine has a buffer that's as wide as the screen, and there's a time limit per scanline on filling the buffer.
 
 * When the "Unlocked H-blank" bit is **clear** in `DISPCNT` you get 1210 cycles (304 * 4 - 6)
 * When the "Unlocked H-blank" bit is **set** in `DISPCNT` you get 954 cycles (240 * 4 - 6)
@@ -437,14 +437,185 @@ The number of cycles each object consumes depends on the object's horizontal siz
 * Normal objects consume `width` cycles.
 * Affine objects consume `2 * width + 10` cycles.
 
-Objects with a lower index are processed first.
-If you run out of object rendering cycles any unprocessed objects won't be drawn.
+Objects are processed by their index order.
+Objects not on the current scanline, horizontally/vertically off-screen, or that are "disabled" as their attribute 0 transform, are skipped in rendering but still take two cycles to process.
+Even when an object won't be drawn on the current scanline the OAM engine has to look at the attributes to know that.
+If not all objects are handled and time runs out then any unprocessed objects simply won't be drawn on this scanline.
 
 ## Showing Static Objects
 
-## Moving The Objects Way Too Fast
+Armed with all this knowledge we can probably show a static object.
 
-## Waiting For Vertical Blank
+First we want to set at least one tile in the object tile memory to some sort of pattern.
+If we write a hex `u32` literal, then each digit of the hex value will be 4 bits, so we can make a 4bpp tile pretty easy.
+One catch is that the indexes fill the tile from left to right, but we write numbers in code with the low-place-value digits on the right.
+So our "tile" as a `u32` literal will be left-right flipped from how it'll appear on the GBA:
 
-## Shadow OAM
+```rust
+/// A tile with an extra notch on the upper left.
+#[rustfmt::skip]
+const TILE_UP_LEFT: [u32; 8] = [
+  // Each hex digit is one 4bpp index value.
+  // Also, the image is left-right flipped from how it
+  // looks in code because the GBA is little-endian!
+  0x11111111,
+  0x12222111,
+  0x12222111,
+  0x12222221,
+  0x12222221,
+  0x12222221,
+  0x12222221,
+  0x11111111,
+];
+```
 
+And we can copy the data into object tile 1 in our `main` function.
+
+```rust
+#[no_mangle]
+pub extern "C" fn main() -> ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+
+  DISPCNT.write(JUST_SHOW_OBJECTS);
+
+  loop {}
+}
+```
+
+We can make other similar tiles too, one for each corner notch.
+
+```rust
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(3).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(4).write(TILE_DOWN_RIGHT);
+```
+
+If we show an 8x8 object using object tile 1, then we'll see an upper-left square.
+
+```rust
+  OBJ_ATTRS.index(0).write(ObjAttr(ObjAttr0(0), ObjAttr1(0), ObjAttr2(1)));
+```
+
+And if we make it wider we can see an upper left and upper right square too.
+
+```rust
+  OBJ_ATTRS.index(0).write(ObjAttr(
+    ObjAttr0(1 << 14),
+    ObjAttr1(0),
+    ObjAttr2(1),
+  ));
+```
+
+But when we make it taller instead, we see... just one tile?
+Why isn't there a second tile drawn below the first?
+
+This is that "Linear object tile mapping" flag from way back with the Display Control.
+It defaults to *off*, so by default when we want to have an object more than 8 pixels tall, the next row of the object will use +32 indexes from the previous row.
+
+```rust
+  // using `x + 32*y` to get the index
+  OBJ_TILE4.index(1 + 32*0).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2 + 32*0).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(1 + 32*1).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(2 + 32*1).write(TILE_DOWN_RIGHT);
+```
+
+Alternately, we can set up our display control to use the linear object tile system and then just fill tiles 1 to 4 like they're a normal array.
+
+```rust
+const JUST_OBJECTS_LINEAR: DisplayControl =
+  DisplayControl::new().with_objects(true).with_linear_obj_tiles(true);
+
+#[no_mangle]
+pub extern "C" fn main() -> ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(3).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(4).write(TILE_DOWN_RIGHT);
+
+  OBJ_ATTRS.index(0).write(ObjAttr(
+    ObjAttr0(0),       // square shape
+    ObjAttr1(1 << 14), // size 1
+    ObjAttr2(1),       // base tile 1
+  ));
+
+  DISPCNT.write(JUST_OBJECTS_LINEAR);
+
+  loop {}
+}
+```
+
+It's really up to you.
+As long as you're consistent, either way will work.
+
+Of course, also you'd want to have a lot of methods for easily getting/setting the right bits of each attribute value.
+I'll put those in to `lib.rs` right now, but I'm not gonna show them all here in the tutorial text.
+They all do just what you'd expect based on the `DisplayControl` type.
+
+For the `ObjAttr` type we can have methods that dispatch to the correct inner field's method.
+On the `x` and `y` properties we can make them take `i16` instaed of `u16` and then just cast inside the setter.
+The user will probably *want* to support signed positions so that stuff can go up off the screen and left off the screen.
+
+```rust
+impl ObjAttr {
+  #[inline]
+  pub const fn new() -> Self {
+    Self(ObjAttr0::new(), ObjAttr1::new(), ObjAttr2::new())
+  }
+  #[inline]
+  pub const fn with_size(self, size: u16) -> Self {
+    Self(self.0, self.1.with_size(size), self.2)
+  }
+  #[inline]
+  pub const fn with_tile(self, tile: u16) -> Self {
+    Self(self.0, self.1, self.2.with_tile(tile))
+  }
+  #[inline]
+  pub const fn with_x(self, x: i16) -> Self {
+    Self(self.0, self.1.with_x(x), self.2)
+  }
+  #[inline]
+  pub const fn with_y(self, y: i16) -> Self {
+    Self(self.0.with_y(y), self.1, self.2)
+  }
+}
+```
+
+And our final `main` goes like this:
+
+```rust
+#[no_mangle]
+pub extern "C" fn main() -> ! {
+  BACKDROP.write(Color::MAGENTA);
+  OBJ_PALETTE.index(1).write(Color::RED);
+  OBJ_PALETTE.index(2).write(Color::WHITE);
+
+  OBJ_TILE4.index(1).write(TILE_UP_LEFT);
+  OBJ_TILE4.index(2).write(TILE_UP_RIGHT);
+  OBJ_TILE4.index(3).write(TILE_DOWN_LEFT);
+  OBJ_TILE4.index(4).write(TILE_DOWN_RIGHT);
+
+  let obj = ObjAttr::new().with_size(1).with_tile(1).with_x(10).with_y(23);
+  OBJ_ATTRS.index(0).write(obj);
+
+  DISPCNT.write(JUST_OBJECTS_LINEAR);
+
+  loop {}
+}
+```
+
+which displays a little square deal thing
+
+![ex3_working_16x16](ex3-working-16x16.png)
+
+That's it for now.
+Next time we'll see about making our square move around and stuff.
