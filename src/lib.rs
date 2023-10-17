@@ -58,9 +58,9 @@ pub struct ObjAttr2(pub u16);
 pub const OBJ_ATTRS_0: VolSeries<ObjAttr0, Safe, Safe, 128, 64> =
   unsafe { VolSeries::new(0x0700_0000) };
 pub const OBJ_ATTRS_1: VolSeries<ObjAttr1, Safe, Safe, 128, 64> =
-  unsafe { VolSeries::new(0x0700_0000) };
+  unsafe { VolSeries::new(0x0700_0000 + 2) };
 pub const OBJ_ATTRS_2: VolSeries<ObjAttr2, Safe, Safe, 128, 64> =
-  unsafe { VolSeries::new(0x0700_0000) };
+  unsafe { VolSeries::new(0x0700_0000 + 4) };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
