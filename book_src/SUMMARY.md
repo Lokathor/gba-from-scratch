@@ -1,6 +1,11 @@
 
 [Introduction](introduction.md)
 
+* Project Setup
+  * Cargo Configuration
+  * `_start` fn
+  * `main` fn
+  * Linker Script
 * Hello World
   * User Input
   * DMA Transfers
