@@ -8,6 +8,96 @@ A lot of things to do with GBA programming in one area will often slightly touch
 
 Before trying to cover any particular subject in close detail, let's get a "high level" summary of the overall abilities and limits of the device.
 
+## User Input
+
+There's a "plus pad" giving 4-direction input.
+Also two main face buttons "A" and "B", along with two secondary face buttons "Start" and "Select".
+Finally there's two shoulder buttons "L" and "R".
+All these controls are digital, they read as either pressed or not-pressed.
+
+The two main GBA models, the original and the "SP", have slightly different orientation of the controls, but they still both have the same set of controls.
+The A button is always to the right of the B button.
+Start and Select aren't so consistent: on the original model they're vertically oriented (Start on top), and with the SP they're horizontal (Start on the right).
+
+## Video Capabilities
+
+The GBA's screen is 240 pixels wide and 160 pixels tall.
+
+The pixels support Red/Green/Blue color, with 5 bits per channel.
+
+There's 4 background layers that can use various display modes.
+The GBA can also display 128 "objects" on the screen, independent of the backgrounds.
+Layers and objects have a "priority" system when there's overlap, which you can think of as being the "distance" from the viewer.
+Lower priority elements are "closer" and so they will be drawn when they overlap with a higher priority element.
+Objects always draw over top of a background of the same priority.
+When two layers or two objects have the same priority, the lower index element gets drawn.
+
+While one of the background modes does support direct-color "bitmap" output, it takes an immense amount of CPU time to animate a full bitmap image.
+Almost all GBA games are drawn using one of the indirect-color "paletted" background modes.
+Paletted color on the GBA can be in either 4-bits per pixel (4bpp) or 8-bits per pixel (8bpp).
+An index value of 0 is always a "transparent" pixel, which shows the element "behind" the given pixel.
+This means that 4-bit images have 15 actual colors available to them, and 8-bit images have 255 colors available.
+
+While drawing, pixels are updated from left to right in each line, and top to bottom down the screen.
+The display unit takes 4 CPU cycles to determine the color for each pixel.
+After the visible 240 pixels of each line are drawn, there's also a 68-pixel "horizontal blank" (h-blank) before the next line begins.
+After all 160 lines are drawn, there's also a 68-line "vertical blank" (v-blank) period before the screen draw cycle starts over.
+Changes to any video related memory or controls usually take effect as soon as they are made, so video settings should usually only be altered during h-blank and/or v-blank periods to avoid graphical artifacts.
+
+The entire draw loop runs at 59.73 FPS, which means that GBA games can run at "60 fps" if you round up just a tiny bit.
+
+## Sound Capabilities
+
+The GBA has the same four sound generator chips that were available on the original Game Boy:
+* Two pulse generators.
+* One programmable wave loop generator.
+* One noise generator.
+
+The GBA also has two First-in-first-out (FIFO) buffers which can play back 8-bit per sample audio recordings.
+
+## Direct Memory Access (DMA)
+
+There are four Direct Memory Access units in the GBA.
+Basically these are specialized units for copying data between two parts of memory.
+They can also be used to set a span of memory to a particular value.
+
+The GBA's DMA units perform a "block transfer", sometimes called a "burst transfer".
+This means that once they begin operating, the entire transfer is completed before they stop.
+While they are in operation, the CPU's execution is paused.
+
+The four different DMA unit each have some restrictions on what address regions they can use as source and destination address values.
+
+A DMA memory copy will run slightly faster than even a well optimized CPU copying routine.
+A DMA memory set will usually run slightly slower than an optimized CPU routine.
+
+The main advantage of using DMA is that they can be set to perform a transfer automatically under certain conditions.
+* At the start of h-blank
+* At the start of v-blank
+* When a FIFO sound buffer is empty.
+
+The downside of using the DMA units is that, because they pause the CPU, they prevent hardware interrupts from being handled until after the transfer is complete.
+This is not always a problem, but it's sometimes preferable to have the CPU do a "normal" memory copy if interrupt timing is essential in your program.
+
+## Timers
+
+There's four timer units in the GBA.
+
+Each timer is a `u16` counter, and has a configurable "reload" value that the counter is set to.
+When the timer ticks, the counter goes up by 1.
+When the counter exceeds `u16::MAX` then the timer "overflows" and resets to the reload value.
+
+A timer can be configured to tick every 1, 64, 256, or 1024 CPU cycles.
+Alternatively, timer N can be configured to tick when timer N-1 overflows.
+This second mode can only be used with timers 1, 2, and 3, since timer 0 doesn't have an "N-1" timer.
+
+Between the configurable reset value and tick speed, you can configure the timers to tick at just about any speed you could ever need.
+
+## Serial Port Communication
+
+The GBA has a serial port, which mostly allows communication with other GBAs via link cable.
+
+There's other hardware that can be hooked to the GBA's serial port,  but mostly it's for the link cable.
+
 ## The CPU's Address Space
 
 | Address | Region |
@@ -78,6 +168,9 @@ The IWRAM is 32k bytes, and has some of the bytes already allocated.
   The system stack starts at `0x0300_7F00`.
   When values are pushed onto the stack, the stack pointer address *decreases*.
 * The rest of IWRAM is free for you to use as you like.
+  The exact amount of "do what you want" space available depends on how much stack memory your program uses.
+  Different programs use the stack different amounts, but it would be "slightly unusual" for a GBA program to take up more than 1k of stack.
+  Unfortunately, there's no automated way for a stack overflow to be detected on the GBA.
 
 IWRAM does not require any wait cycles, and has a 32-bit bus.
 This means that IWRAM can be used at the full speed of the GBA's CPU (a whopping 16MHz).
@@ -85,10 +178,8 @@ This means that IWRAM can be used at the full speed of the GBA's CPU (a whopping
 It is possible to allocate both static variables and even function code into IWRAM.
 The actual initialization data always lives in ROM,
 but the linker can allocate values to have an IWRAM address,
-then at the start of the program the appropriate data can be copied from ROM to RAM by assembly,
-before any Rust code is called.
-Because IWRAM isn't very large this can't be done with all your code,
-but placing the "hot" code in IWRAM is commonly done.
+then at the start of the program (before any Rust code executes) the appropriate data can be copied from ROM to RAM by assembly code.
+Placing the "hot" code in IWRAM is very commonly done.
 
 ### IO Controls
 
@@ -105,54 +196,137 @@ There's a lot of different parts, but most of them are each fairly simple, so sl
 
 ### Palette RAM
 
+The palette memory has space for 256 background colors, followed immediately by 256 object colors.
+
+When a visual element is in 8bpp mode, the background or object indexes directly into the full array, with the 8-bit value for each pixel.
+
+When a visual element is in 4bpp mode it will also have a "palbank" value associated with it.
+The palbank sets the upper 4 bits of the index, while the pixel value for the image selects the lower 4 bits.
+In other words, the palbank selects which of the 16 sub-groupings the image uses, and the index values in the image select within the bank.
+
+In both modes, an index value of 0 always makes that pixel transparent.
+This means that 8bpp images can use up to 255 colors (plus transparent),
+while 4bpp images can use up to 15 colors (plua transparent).
+The index 0 entry of the background palette and object palette are thus not ever actually shown in any background or object.
+
+When no visual element would be drawn to a particular pixel, index 0 of the background palette is what's shown.
+This is called the "backdrop" color.
+
+Index 0 of the object palette has no special alternative use.
+It's just there for the consistency, so that both palettes are 256 elements.
+
 ### Video RAM
+
+Video RAM is 64k, plus 16k, plus 16k.
+This is a little different from simply having 96k of space because the display can be set into one of 6 different modes, and the active mode determines how the middle chip is used.
+
+The video modes are just designated by their number: 0 through 5.
+
+In display mode 0, 1, and 2 there's 64k for background data, and 32k for object data.
+
+In display mode 3, 4, and 5 the middle chunk of memory flips from being part of the objects to being part of the background.
+You get 80k for background data and 16k for objects.
+
+Tiles are always 8x8 squares.
+The amount of memory used depends on the bit depth of the tile: a 4bpp tile is 32 bytes, and an 8bpp tile is 64 bytes.
+
+Backgrounds also need a "tile map" as well as the tile data.
+The tile map says which tiles go at what position within the background.
+The tiles and tile maps all have to share the same space for background data.
+
+Multi-tile objects are not nearly as configurable.
+There's a single global setting for which of the two modes multi-tile all objects should use.
+Because of this, you don't need to reserve any object data space for tile maps at least.
 
 ### Object Attribute Memory
 
+There's 128 entries of object attribute data.
+Each attribute entry is 6 bytes.
+Usually this is treated like a tuple struct of three `u16` values, with the fields just being called called 0, 1, and 2.
+
+In *between* the object attribute entries are elements of the affine transform matrix data.
+Each parameter is an `i16`, and it takes four of them to form a complete 2x2 transform matrix.
+
+So the overall memory pattern looks sorta like this:
+
+```
+obj_0.field0
+obj_0.field1
+obj_0.field2
+affine_0.a
+obj_1.field0
+obj_1.field1
+obj_1.field2
+affine_0.b
+obj_2.field0
+obj_2.field1
+obj_2.field2
+affine_0.c
+obj_3.field0
+obj_3.field1
+obj_3.field2
+affine_0.d
+```
+
+This whole thing is repeated 32 times, so in total there's 128 object entries and 32 affine transform entries.
+
+The object attributes select various visual details about each object: the size, the base tile index, the tile bit depth, the palbank if it's a 4bpp object, etc.
+
+The affine transform matrix data allows for rotation and scaling of visual elements.
+When an element is drawn using affine display, it will have an affine index associated with it.
+That index selects which of the 32 affine matrix transforms it's drawn with.
+
+Because these two use cases aren't necessarily related, it can be slightly annoying that they're interspersed in memory.
+However, it's not really that bad once you get used to it.
+
 ### ROM Data
+
+This is where most of the program data will be.
+It's Read-Only Memory, but you get a whole heck of a lot of it.
+Way more than usual for "embedded device" type hardware.
+The GBA supports ROMs up to 32 megabytes.
+Most commercial games stayed well under 16 megabytes, so you should absolutely be able to stay within the 32 megabyte limit.
+
+The ROM has a 16-bit bus.
+There's also some wait cycles as well, like with EWRAM.
+The number of wait cycles depends on if the access is a "sequential" or "non-sequential" access (sequential accesses are faster).
+
+There's actually two other mirrors for accessing ROM data.
+In the table above I list ROM as `0x08...`, but there's also a mirror also at `0x0A...` and `0x0C...` as well.
+This mostly only matters if you've got a special game pak where different memory is accessible at different wait speeds.
+
+For the purposes of this guide, I'm just going to act like ROM is always at `0x08...` addresses.
 
 ### Save RAM
 
-## User Input
+The Save RAM available depends on the cart being used. Usually up to 32k of save ram is available for the program to use.
 
-## Video Capabilities
+Unfortunately, the SRAM has some strong limitations:
 
-The GBA's screen is 240 pixels wide and 160 pixels tall.
+* There's only an 8-bit bus, and larger accesses aren't automatically split up like with other memory regions.
+ We have to use special copy routines to get data in and out of SRAM.
+* You can't access SRAM and ROM in the same instruction, so for the program to run properly the special copying code has to be placed in RAM.
 
-The pixels support Red/Green/Blue color, with 5 bits per channel.
-
-There's 4 background layers that can use various display modes.
-The GBA can also display 128 "objects" on the screen, independent of the backgrounds.
-Layers and objects have a "priority" system when there's overlap, which you can think of as being the "distance" from the viewer.
-Lower priority elements are "closer" and so they will be drawn when they overlap with a higher priority element.
-Objects always draw over top of a background of the same priority.
-When two layers or two objects have the same priority, the lower index element gets drawn.
-
-While one of the background modes does support direct-color "bitmap" output, it takes an immense amount of CPU time to animate a full bitmap image.
-Almost all GBA games are drawn using one of the indirect-color "paletted" background modes.
-Paletted color on the GBA can be in either 4-bits per pixel or 8-bits per pixel.
-An index value of 0 is always a "transparent" pixel, which shows the element "behind" the given pixel.
-This means that 4-bit images have 15 actual colors available to them, and 8-bit images have 255 colors available.
-
-While drawing, pixels are updated from left to right in each line, and top to bottom down the screen.
-The display unit takes 4 CPU cycles to determine the color for each pixel.
-After the visible 240 pixels of each line are drawn, there's also a 68-pixel "horizontal blank" before the next line begins.
-After the all 160 lines are drawn, there's also a 68-line "vertical blank" period before the screen draw cycle starts over.
-The entire draw loop runs at 59.73 FPS, which means that GBA games can run at "60 fps" if you round up just a tiny bit.
-
-## Sound Capabilities
-
-## Direct Memory Access (DMA)
-
-## Timers
-
-## Serial Port Communication
+It's stuff that we can cope with, but it's still a little annoying.
 
 # Non-`cargo` Tools
+
+Other than `cargo` for building your Rust code, you'll probably want some other command line tools.
 
 ## gbafix
 
 [GitHub](https://github.com/rust-console/gbafix)
+
+When we compile a ROM, we'll end up with a blank ROM header.
+This is fine to run the program in an emulator, but won't work on real hardware.
+Running the `gbafix` program can patch the header so that the ROM is suitable for use with hardware.
+
+There's a C version, but I also rewrote it in Rust (the program is very small).
+You can install it through `cargo` easily enough.
+
+```
+cargo install gbafix
+```
 
 ## grit
 
@@ -160,22 +334,17 @@ The entire draw loop runs at 59.73 FPS, which means that GBA games can run at "6
 
 [Github](https://github.com/devkitPro/grit) (C source only)
 
-# Rust Project Outline
-
-## Cargo Configuration
-
-## Linker Script
-
-## `_start` fn
-
-## Assembly Interrupt Handler
-
-## `main` fn
+This is a tool that converts image files into a format suitable on the GBA.
+It outputs the results as either assembly code or C code, containing a list of `u32` constants.
+Just copy this list of values into your Rust code as a `&[u32]` slice and you'll have the image data you need.
+The palette data will be separate from the image data, you'll probably want both.
 
 # External Reference Materials
 
 * [gbatek](https://problemkaputt.de/gbatek.htm) (html)
   This is the standard homebrew reference for all things GBA / DS / DSi related.
+  It contains just about everything you'd need to know about the MMIO control for the GBA.
+  The only downside is that the notes are sometimes a little cryptic.
 * [ARM Architecture Reference Manual](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/third-party/archives/ddi0100e_arm_arm.pdf) (pdf)
   This version is published in 2000, and so covers the ARMv5T architecture.
   The GBA uses the ARMv4T architecture, which means it's covered by this document.
@@ -183,6 +352,9 @@ The entire draw loop runs at 59.73 FPS, which means that GBA games can run at "6
 * [ARM7TDMI Reference Manual](https://documentation-service.arm.com/static/5e8e1323fd977155116a3129?token=) (pdf)
   Within the ARMv4T architecture, the GBA's exact CPU is an ARM7TDMI.
   This document can be relevent if you need close CPU details.
+* [The Awesome GBA Dev Repository](https://github.com/gbadev-org/awesome-gbadev) (github)
+  This has all sorts of good GBA development information.
+  Particularly, there's links to a forum and a discord so that you can chat with the community and hopefully get your questions answered.
 
 # Project License
 
