@@ -302,7 +302,7 @@ The Save RAM available depends on the cart being used. Usually up to 32k of save
 Unfortunately, the SRAM has some strong limitations:
 
 * There's only an 8-bit bus, and larger accesses aren't automatically split up like with other memory regions.
- We have to use special copy routines to get data in and out of SRAM.
+  We have to use special copy routines to get data in and out of SRAM.
 * You can't access SRAM and ROM in the same instruction, so for the program to run properly the special copying code has to be placed in RAM.
 
 It's stuff that we can cope with, but it's still a little annoying.

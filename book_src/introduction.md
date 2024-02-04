@@ -27,7 +27,8 @@ I also know that some on the GBA Development Discord use [no$gba](https://www.no
 The "binutils" for a toolchain are utilities to work on binaries that the toolchain produces.
 If we want to convert our compiler output into a usable ROM image (or do other neat things), we'll need to use the binary utils.
 
-There's two main sets of utils:
+Since there's two major open source C toolchains, there's two main sets of binutils:
+one for LLVM and one for GNU.
 
 * The [cargo-binutils](https://github.com/rust-embedded/cargo-binutils) extension for cargo lets us access the binutils for the LLVM that comes with our Rust toolchain.
   Once you have this, all the "usual" binutils become available as cargo subcommands.
@@ -59,8 +60,7 @@ When we compile a ROM, we'll end up with a blank ROM header.
 This is fine if we only want to run the program in an emulator, but won't work on real hardware.
 Running the `gbafix` program can patch the header so that the ROM is suitable for use with hardware.
 
-There's a C version, but I also rewrote it in Rust (the C program was very small).
-You can install it through `cargo` easily enough.
+There's a C version that works just fine, but since it's a very small program I wrote a Rust version as well which can be installed through `cargo`:
 
 ```
 cargo install gbafix

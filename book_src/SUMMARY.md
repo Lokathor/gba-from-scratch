@@ -5,10 +5,10 @@
 
 # Project Setup
 * [Cargo Configuration](setup/cargo.md)
+* [Linker Script](setup/linker.md)
 * [`_start` fn](setup/start.md)
 * [`main` fn](setup/main.md)
 * [`panic_handler` fn](setup/panic_handler.md)
-* [Linker Script](setup/linker.md)
 * [ROM Image](setup/rom_image.md)
 
 # Miscellaneous Stuff
