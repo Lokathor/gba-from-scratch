@@ -3,7 +3,7 @@
 
 [GBA Overview](overview.md)
 
-# Project Setup
+# Project Setup Arc
 * [Cargo Configuration](setup/cargo.md)
 * [Linker Script](setup/linker.md)
 * [`_start` fn](setup/start.md)
@@ -11,7 +11,7 @@
 * [`panic_handler` fn](setup/panic_handler.md)
 * [ROM Image](setup/rom_image.md)
 
-# Miscellaneous Stuff
+# Miscellaneous Episodes
 * [User Input](misc/input.md)
 * [Interrupts](misc/interrupts.md)
 * [DMA Transfers](misc/dma.md)
@@ -22,7 +22,7 @@
 * [Random Numbers](misc/prng.md)
 * [Fixed Point Values](misc/fixed_point.md)
 
-# Video
+# Video Arc
 * [Color](video/color.md)
 * [Tiles](video/tiles.md)
 * [Objects](video/objects.md)
@@ -33,6 +33,6 @@
 * [Mosaic Effect](video/mosaic.md)
 * [Color Blending](video/blending.md)
 
-# Audio
+# Audio Arc
 * [Programmable Sound](audio/psg.md)
 * [Recorded Sounds](audio/recordings.md)
