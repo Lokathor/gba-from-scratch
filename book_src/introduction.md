@@ -40,8 +40,6 @@ one for LLVM and one for GNU.
   To run `objdump` on our GBA executable we'd run `arm-none-eabi-objdump`.
   You'd also need to pass the correct path to your executable files, which are generally buried in the `target/` directory.
 
-However you wanna do it.
-
 ### `cargo-show-asm`
 
 [GitHub](https://github.com/pacak/cargo-show-asm)

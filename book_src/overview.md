@@ -38,7 +38,9 @@ While drawing, pixels are updated from left to right in each line, and top to bo
 The display unit takes 4 CPU cycles to determine the color for each pixel.
 After the visible 240 pixels of each line are drawn, there's also a 68-pixel "horizontal blank" (h-blank) before the next line begins.
 After all 160 lines are drawn, there's also a 68-line "vertical blank" (v-blank) period before the screen draw cycle starts over.
-Changes to any video related memory or controls usually take effect as soon as they are made, so video settings should usually only be altered during h-blank and/or v-blank periods to avoid graphical artifacts.
+
+Changes to any video related memory or controls usually take effect as soon as they are made.
+Video settings should usually only be altered during h-blank and/or v-blank periods if you want to avoid graphical artifacts.
 
 The entire draw loop runs at 59.73 FPS, which means that GBA games can run at "60 fps" if you round up just a tiny bit.
 
