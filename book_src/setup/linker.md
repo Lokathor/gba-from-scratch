@@ -48,24 +48,52 @@ MEMORY {
 ## Sections
 
 The `SECTIONS` part lets you define a mapping from "input sections" to "output sections".
-For each output section desired, you define one or more input section matchers.
-All of the input sections get assigned to an output section, or are discarded, according to these matchers.
 
-We can also assign names to addresses that are computed during all the linking.
-Importantly, this lets us know the start and end points of different output regions.
+For each output section desired, you list one or more input section matchers.
+The linker then goes through each source file, sorting each input section according to your output section rules.
 
-All of the data will be *physically* "at" a place the ROM when the GBA is turned on.
+Here's an example:
+
+```ld
+  .rodata : {
+    *(.rodata .rodata.*);
+    . = ALIGN(4);
+  } >rom = 0x00
+```
+
+The `.rodata : {` part declares an *output section*.
+Within that, the `*(.rodata .rodata.*);` matcher is tested against each file that's input to the linker.
+The first `*` outside the parens is where we *could* match against a filename.
+It's very rare we ever want to do that, we usually want it to apply to "all files" with `*(   )`.
+Within the parens, we use one or more whitespace separated glob matchers.
+So `.rodata` means an exact match, and `.rodata.*` means "anything starting with `.rodata.`".
+
+At the end of some of our output section we want in RAM, there's the cryptic line `. = ALIGN(4);`.
+This aligns the final address of the section to 4 bytes by inserting any necessary padding.
+We'll talk more about alignment later, but bulk data can be copied faster if both the start address and the size are aligned to 4.
+
+Our linker script will have some lines like `_iwram_position_in_rom = .;` which are not in an output section.
+These lines assign the current output address (written with just `.`) to the symbol.
+These symbols become global values that can be used within our program.
+If the program never actually references the symbol they'll just be thrown out, without a problem.
+The only concern is if there's a name collision (a name defined more than once), which is why we're using the leading `_`.
+By convention, things with a leading underscore are "provided by the toolchain", and the user can't complain much that we used it first.
+
+Since our program is on a game cart being put into the GBA, all of the data will be *physically* "at" a place the ROM when the GBA is turned on.
+That's what the `AT>rom` part of some of the output sections means.
 Data can also be *logically* allocated somewhere in RAM as well.
-We name the start and end positions of these different regions so that our `_start` function can copy the correct ROM ranges into RAM.
+This is also known as the "Virtual Memory Address" (VMA) when you look in the ELF info of your compiled program.
+That's what the parts like `>iwram` mean.
+Lines like `_iwram_start = ABSOLUTE(.);`, that are *inside* of an output section listing, will make the defined symbol have the logical address.
 
 Finally, there's also a bunch of debug metadata things that can occur.
-We can just collect any debug info from our input files into the output file, and that's fine.
+We can just collect any debug info sections from our input files into the same section names in the output file.
 
 ```ld
 SECTIONS {
   .text : {
-    /* be sure that the ROM header is the _very_ first */
-    *(.text.gba_rom_header);
+    /* Make sure this is the _very_ first ROM entry */
+    *(.text._start);
     
     /* Now all other program text can be placed */
     *(.text .text.*);
@@ -78,42 +106,42 @@ SECTIONS {
   } >rom = 0x00
 
   . = ALIGN(4);
-  __iwram_position_in_rom = .;
+  _iwram_position_in_rom = .;
   .data : {
-    __iwram_start = ABSOLUTE(.);
+    _iwram_start = ABSOLUTE(.);
     
     *(.data .data.*);
     *(.iwram .iwram.*);
     . = ALIGN(4);
     
-    __iwram_end = ABSOLUTE(.);
+    _iwram_end = ABSOLUTE(.);
   } >iwram AT>rom = 0x00
 
   . = ALIGN(4);
-  __ewram_position_in_rom = __iwram_position_in_rom + (__iwram_end - __iwram_start);
+  _ewram_position_in_rom = _iwram_position_in_rom + (_iwram_end - _iwram_start);
   .ewram : {
-    __ewram_start = ABSOLUTE(.);
+    _ewram_start = ABSOLUTE(.);
     
     *(.ewram .ewram.*);
     . = ALIGN(4);
     
-    __ewram_end = ABSOLUTE(.);
+    _ewram_end = ABSOLUTE(.);
   } >ewram AT>rom = 0x00
 
   . = ALIGN(4);
-  __bss_position_in_rom = __ewram_position_in_rom + (__ewram_end - __ewram_start);
+  _bss_position_in_rom = _ewram_position_in_rom + (_ewram_end - _ewram_start);
   .bss : {
-    __bss_start = ABSOLUTE(.);
+    _bss_start = ABSOLUTE(.);
 
     *(.bss .bss.*);
     . = ALIGN(4);
 
-    __bss_end = ABSOLUTE(.);
+    _bss_end = ABSOLUTE(.);
   } >iwram
 
-  __iwram_word_copy_count = (__iwram_end - __iwram_start) / 4;
-  __ewram_word_copy_count = (__ewram_end - __ewram_start) / 4;
-  __bss_word_clear_count = (__bss_end - __bss_start) / 4;
+  _iwram_word_copy_count = (_iwram_end - _iwram_start) / 4;
+  _ewram_word_copy_count = (_ewram_end - _ewram_start) / 4;
+  _bss_word_clear_count = (_bss_end - _bss_start) / 4;
 
   /* rust-lld demands we keep the `section header string table` */
   .shstrtab        0 : { *(.shstrtab) }
