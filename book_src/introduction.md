@@ -31,14 +31,25 @@ Since there's two major open source C toolchains, there's two main sets of binut
 one for LLVM and one for GNU.
 
 * The [cargo-binutils](https://github.com/rust-embedded/cargo-binutils) extension for cargo lets us access the binutils for the LLVM that comes with our Rust toolchain.
-  Once you have this, all the "usual" binutils become available as cargo subcommands.
-  Running `objdump` would be `cargo objdump`
+  You'll also have to have `rustup` install the `llvm-tools` component to make it work.
+  Once you have this set, all the "usual" binutils become available as cargo subcommands.
+  Running `objdump` would be `cargo objdump`.
 * Alternately, you can install the [ARM GNU Binutils](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain).
   In this case, you'll want to also [configure cargo](https://doc.rust-lang.org/cargo/reference/config.html#configuration-format) to use the GNU Binutils linker.
   That way, the debug info nd such in your executables will be compatible with what the other GNU binutils expect.
   When using the GNU binutils, each utility is a separate program, and for non-host targets the target name prefixes the util name.
   To run `objdump` on our GBA executable we'd run `arm-none-eabi-objdump`.
   You'd also need to pass the correct path to your executable files, which are generally buried in the `target/` directory.
+
+**IMPORTANT:**
+LLVM's `objdump` disassembler *does not* understand interworking code!
+We'll learn more about this later, but basically our assembly will default to `t32` code, and sometimes we'll use `a32` code when it gives us an advantage.
+The `objdump` that LLVM provides doesn't understand this, and will decode all bytes of a function as if they were `t32` when disassembling.
+This doesn't hurt the actual running of the program, but it can be confusing when trying to inspect the binary if you don't know about this.
+To avoid this problem, you can use the GNU Binutils (which handle interworking totally fine), or you can use `cargo-show-asm`.
+
+It's not necessary to inspect the assembly with `objdump` in most situations, but it's a useful ability some of the time.
+Particularly, during this book I'll probably be showing assembly output much more than normal to help with the lessons.
 
 ### `cargo-show-asm`
 
@@ -47,8 +58,8 @@ one for LLVM and one for GNU.
 Using `objdump`, you can disassemble an executable file back into assembly code.
 This is very neat, and very useful, but sometimes `cargo-show-asm` is *sometimes better*.
 
-What `cargo-show-asm` does is let you check the mir, llvm-ir, or even the assembly that's sent to the assembler.
-This can be more readable than looking at disassembler output.
+What `cargo-show-asm` does is let you check the mir, llvm-ir, and assembly output.
+Also, the assembly that you see is *before* it goes to the assembler, which means that it won't mix up `a32` and `t32` code like LLVM's `objdump` does.
 
 ### `gbafix`
 

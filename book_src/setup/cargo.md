@@ -86,6 +86,19 @@ runner = "mgba-qt"
 rustflags = ["-Clink-arg=-Tlinker_scripts/standard_boot.ld"]
 ```
 
+**ALSO:**
+If you want to use the `objdump` that comes with GNU Binutils, you should set the GNU Binutils linker to be used.
+If you mix LLVM's linker and GNU's `objdump` it won't understand where the symbols are, so it won't be able to show what functions are where.
+Instead, `objdump` will just show each output section as a single, continuous stream of assembly.
+It'll be fairly unreadable, and at least you'll know that something is wrong right away.
+
+Setting the linker to use is part of the `target.thumbv4t-none-eabi` config.
+
+```toml
+[target.thumbv4t-none-eabi]
+linker = "arm-none-eabi-ld"
+```
+
 ## `Cargo.toml`
 
 The `Cargo.toml` file is used in every Rust project, so you've definitely seen this one.
@@ -106,3 +119,17 @@ opt-level = 3
 
 Don't worry, using `opt-level=3` won't make the rebuild times on your GBA programs jump super high or anything.
 It'll be totally fine.
+
+## Optional: `-Ztrap-unreachable=no`
+
+Normally, LLVM will put a "trap" instruction at unreachable points of functions.
+This is, I guess, to try and make sure the program crashes if the program control flow goes out of bounds or something.
+I don't know why exactly, but what I do know is that it won't crash the GBA like intended.
+The GBA's undefined instruction handler just returns without doing anything.
+So, the trap instructions don't help us in any way at all.
+
+If you want, you can put `-Ztrap-unreachable=no` as one of the flags in the `rustflags` list.
+This gets rid of those trap instructions.
+It's nice, but also not actually strictly necessary.
+
+If, some day, `build-std` was Stable, but `trap-unreachable=no` still wasn't, we could just forget this option and use Stable.
