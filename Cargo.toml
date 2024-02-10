@@ -2,7 +2,7 @@
 name = "gba_from_scratch"
 description = "Library code for the `GBA From Scratch With Ferris` series"
 repository = "https://github.com/Lokathor/gba-from-scratch"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 license = "Zlib OR Apache-2.0 OR MIT"
 publish = false

@@ -7,7 +7,7 @@ src = "book_src"
 
 [build]
 build-dir = "target/book_out"
-create-missing = false
+create-missing = true
 
 [output.html]
 git-repository-url = "https://github.com/Lokathor/gba-from-scratch"

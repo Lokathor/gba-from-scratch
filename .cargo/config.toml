@@ -1,10 +1,12 @@
 
-[unstable]
-build-std = ["core"]
-
 [build]
 target = "thumbv4t-none-eabi"
 
+[unstable]
+build-std = ["core"]
+build-std-features = ["compiler-builtins-weak-intrinsics"]
+
 [target.thumbv4t-none-eabi]
-rustflags = ["-Ztrap-unreachable=no", "-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
 runner = "mgba-qt"
+rustflags = ["-Clink-arg=-Tlinker_scripts/standard_boot.ld"]
+linker = "arm-none-eabi-ld"
