@@ -28,7 +28,7 @@ macro_rules! zero_words_r0r1r2 {
     concat!(
       concat!("ldr r0, =", $start, "\n"),
       "mov r1, #0\n",
-      concat!("ldr r0, =", $count, "\n"),
+      concat!("ldr r2, =", $count, "\n"),
       "1:\n",
       "subs    r2, r2, #4\n",
       "strge   r1, [r0], #4\n",
@@ -67,13 +67,13 @@ unsafe extern "C" fn _start() -> ! {
     ),
 
     // Set Assembly Interrupt Handler
-    "ldr r1, ={asm_irq_handler}",
+    "ldr r0, ={asm_irq_handler}",
     "mov r12, #0x04000000",
-    "str r1, [r12, #-4]",
+    "str r0, [r12, #-4]",
 
     // Call `main`
-    "ldr r0, =main",
-    "bx r0",
+    "ldr r12, =main",
+    "bx r12",
     options(noreturn),
     asm_irq_handler = sym asm_irq_handler,
   }
