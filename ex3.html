@@ -98,7 +98,9 @@
             <div class="sidebar-scrollbox">
                 <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="ex1.html"><strong aria-hidden="true">1.</strong> A Basic Executable</a></li><li class="chapter-item expanded "><a href="ex2.html"><strong aria-hidden="true">2.</strong> User Input</a></li><li class="chapter-item expanded "><a href="ex3.html" class="active"><strong aria-hidden="true">3.</strong> Objects / Sprites</a></li></ol>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
         </nav>
 
         <!-- Track and set sidebar scroll position -->
@@ -185,17 +187,17 @@
                         <h1 id="objects--sprites"><a class="header" href="#objects--sprites">Objects / Sprites</a></h1>
 <p>Now that we can get user input there's a <em>lot</em> of things that we could learn about next.
 Probably we should focus on how to improve our drawing abilities.</p>
-<p>Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called &quot;OBJ&quot; for short).
-The background layers let you draw a few &quot;big&quot; things (128x128 or bigger), and the objects let you draw many &quot;small&quot; things (64x64 or less).</p>
-<p>The objects have a fairly consistent behavior, while the four background layers behave differently depending on the &quot;video mode&quot; that you set in the display control.
+<p>Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called "OBJ" for short).
+The background layers let you draw a few "big" things (128x128 or bigger), and the objects let you draw many "small" things (64x64 or less).</p>
+<p>The objects have a fairly consistent behavior, while the four background layers behave differently depending on the "video mode" that you set in the display control.
 That's reason enough to focus on the objects first.</p>
 <h3 id="are-they-objects-or-are-they-sprites"><a class="header" href="#are-they-objects-or-are-they-sprites">Are They Objects Or Are They Sprites?</a></h3>
-<p>The objects are sometimes called &quot;sprites&quot;.
+<p>The objects are sometimes called "sprites".
 GBATEK calls them objects, and mGBA (v0.10 at least) calls them sprites.
 Some people care about the difference between the two terms, but I don't.
-I'm just going to say &quot;object&quot; most of the time in this series because the data for them is called the &quot;object active memory&quot;.</p>
+I'm just going to say "object" most of the time in this series because the data for them is called the "object active memory".</p>
 <h2 id="display-control"><a class="header" href="#display-control">Display Control</a></h2>
-<p>We've already seen that the display control has a &quot;forced blank&quot; bit.
+<p>We've already seen that the display control has a "forced blank" bit.
 Most of the other bits are for background control stuff, but since some of them affect object display we'll just cover that right now.</p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">Bit(s)</th><th style="text-align: left">Setting</th></tr></thead><tbody>
 <tr><td style="text-align: center">0-2</td><td style="text-align: left">Video Mode</td></tr>
@@ -217,12 +219,12 @@ Most of the other bits are for background control stuff, but since some of them 
 <ul>
 <li><strong>Video Mode:</strong> This sets which mode the four background layers will operate with. Despite this being a 3-bit field, only modes 0 through 5 give a useful display. Modes 6 and 7 cause garbage output.</li>
 <li><strong>Frame Select:</strong> Affects which bitmap frame is used in video mode 4 or 5.</li>
-<li><strong>Unlocked H-blank:</strong> GBATEK calls this &quot;H-Blank Interval Free&quot;, and mGBA's debug controls call this &quot;Unlocked H-blank&quot;. This bit affects what you can do during the &quot;horizontal blank&quot; time between each scanline being shown, but when it's on fewer objects can be drawn. We won't be doing any per-scanline drawing for now, so we'll leave it off by default.</li>
+<li><strong>Unlocked H-blank:</strong> GBATEK calls this "H-Blank Interval Free", and mGBA's debug controls call this "Unlocked H-blank". This bit affects what you can do during the "horizontal blank" time between each scanline being shown, but when it's on fewer objects can be drawn. We won't be doing any per-scanline drawing for now, so we'll leave it off by default.</li>
 <li><strong>Linear object tile mapping:</strong> This affects how we lay out the tiles for multi-tile objects. We'll talk about the details of this in just a moment.</li>
 <li><strong>Forced Blank:</strong> Hey we know about this bit. When it's on, the display won't access any memory and will just output white pixels any time it would have rendered a pixel normally.</li>
 <li><strong>Enable Background:</strong> These four bits set if we want each of the four background layers on. For now we don't care.</li>
 <li><strong>Enable Objects:</strong> This bit sets the objects to be displayed.</li>
-<li><strong>Window Flags:</strong> These three bits affect the &quot;window&quot; special graphical feature. We'll ignore these bits for now.</li>
+<li><strong>Window Flags:</strong> These three bits affect the "window" special graphical feature. We'll ignore these bits for now.</li>
 </ul>
 <p>I'm going to use the <code>bitfrob</code> crate to get some bit manipulation utilities.</p>
 <pre><code>&gt; cargo add bitfrob
@@ -234,7 +236,7 @@ Most of the other bits are for background control stuff, but since some of them 
 </code></pre>
 <p>Now we can give a type to our display control value, as well as just enough methods to get started.
 Unlike with our <code>Color</code> type, with the <code>DisplayControl</code> we want to completely prevent an invalid video mode from being set, so we'll keep the <code>u16</code> that we're wrapping as a private field.
-Then we just have one &quot;builder&quot; method for each bit or group of bits that we want to be able to change.
+Then we just have one "builder" method for each bit or group of bits that we want to be able to change.
 To start we can skip all the background related bits, so we'll only need three builders.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -278,7 +280,7 @@ const JUST_SHOW_OBJECTS: DisplayControl =
   DisplayControl::new().with_objects(true);
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   DISPCNT.write(JUST_SHOW_OBJECTS);
 
   loop {
@@ -288,7 +290,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 }</code></pre></pre>
 <p>For now that's all we need to do for the display control.</p>
 <h2 id="object-palette"><a class="header" href="#object-palette">Object Palette</a></h2>
-<p>Objects always need to use &quot;paletted&quot; color.
+<p>Objects always need to use "paletted" color.
 Instead of each pixel within the object's image holding a full color value, it just holds an index into the palette.
 This allows each pixel to only need 4 or 8 bits each, instead of the 16 bits needed for a complete color.</p>
 <p>The palette for objects starts at <code>0x0500_0200</code>, and it's 256 entries long.
@@ -299,7 +301,7 @@ A pixel value of 0 means that the object is transparent in that pixel.
 This allows for up to 255 colors to be used within a single object.</li>
 <li>When an object is set for 4bpp each non-zero pixel value is <em>the low half</em> of the full index value.
 A second setting within the object's attributes determine the upper half of the index value.
-This effectively splits the palette memory into 16 &quot;palbank&quot; groupings.
+This effectively splits the palette memory into 16 "palbank" groupings.
 As with 8bpp objects, a pixel value of 0 makes a transparent pixel.
 This allows for up to 15 colors within a single object.</li>
 </ul>
@@ -340,7 +342,7 @@ impl Color {
 <pre><pre class="playground"><code class="language-rust">// in ex3.rs
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);
@@ -350,7 +352,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
   loop {}
 }</code></pre></pre>
 <p>If we run the example in mGBA we can check our work using the debug utilities.
-In the menu, &quot;Tools -&gt; Game State Views -&gt; View Palette...&quot; will open a dialog showing all the background and object palette info.</p>
+In the menu, "Tools -&gt; Game State Views -&gt; View Palette..." will open a dialog showing all the background and object palette info.</p>
 <ul>
 <li>The backdrop color will show up in the 0th entry of the background palette.</li>
 <li>The two object palette colors will be in positions 1 and 2 of the top row.</li>
@@ -361,7 +363,7 @@ In the menu, &quot;Tools -&gt; Game State Views -&gt; View Palette...&quot; will
 <p>First, what is a tile exactly:</p>
 <ul>
 <li>A tile is an 8x8 square of palette indexes.</li>
-<li>A palette index can be either 4 bits per pixel (4bpp) or 8 bits per pixel (8bpp). This is the &quot;bit depth&quot; of the indexes.</li>
+<li>A palette index can be either 4 bits per pixel (4bpp) or 8 bits per pixel (8bpp). This is the "bit depth" of the indexes.</li>
 <li>The indexes store one row at a time, left to right, top to bottom.</li>
 </ul>
 <p>So we might have the following Rust constants</p>
@@ -391,9 +393,9 @@ pub const SIZE_OF_OBJ_TILE_MEM: usize = kilobytes!(32);
 However, the GBA's video memory does <strong>NOT</strong> work right with individual byte writes.
 We can cover the details another time, but with video memory you always have to write in 16-bit or 32-bit chunks.
 Also, the GBA is simply much faster at transferring bulk data around when it's aligned to 4.
-Data aligned to 4 can be copied one or more <code>u32</code> values at time (one or more &quot;words&quot; in ARM terms).
+Data aligned to 4 can be copied one or more <code>u32</code> values at time (one or more "words" in ARM terms).
 Being more aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
-Tiles, particularly if we've got dozens or hundreds of them, count as &quot;big enough to care about alignment&quot;.
+Tiles, particularly if we've got dozens or hundreds of them, count as "big enough to care about alignment".
 This means that instead of modeling tile data as being arrays of <code>u8</code>, we'll use smaller arrays of <code>u32</code>, which will keep the data aligned to 4.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -413,7 +415,7 @@ pub const OBJ_TILES_U32: VolBlock&lt;u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT&gt
   unsafe { VolBlock::new(0x0601_0000) };
 <span class="boring">}</span></code></pre></pre>
 <p>Here's where things get kinda weird.
-An object's attributes (most of which we'll cover lower down) include a &quot;Tile ID&quot; for the base tile of the object.
+An object's attributes (most of which we'll cover lower down) include a "Tile ID" for the base tile of the object.
 These tile id values are used as a 32 byte index, regardless of if the object uses 4bpp or 8bpp drawing.
 This means that they line up perfectly with a 4bpp view of the tile data, and we get 1024 IDs.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -444,7 +446,7 @@ For now it's enough that we've got the right addresses at all.</p>
 In this case, only object tile index values 512 and above are usable for object display.</p>
 <h2 id="object-attribute-memory"><a class="header" href="#object-attribute-memory">Object Attribute Memory</a></h2>
 <p>Separate from the object tile memory, there's also the Object Attribute Memory (OAM) region.
-This has space for 128 &quot;attribute&quot; entries, which defines how the objects are shown.</p>
+This has space for 128 "attribute" entries, which defines how the objects are shown.</p>
 <p>Each attribute needs 48 bits.
 This is an unfortunate number of bits, because it's not a clean power of 2.
 Normally we refer to each attribute entry as having three <code>u16</code> attributes just called 0, 1, and 2.</p>
@@ -521,11 +523,11 @@ It's pretty unlikely to matter, but maybe.</p>
 The screen is 160 pixels tall, and the coordinates wrap.
 If you want something to appear to move up past the top of the screen, then wrap the Y value around.
 Alternately, you can do the position math using signed values and then <code>as</code> cast the value to unsigned.</li>
-<li>Bits 8 and 9 set what mGBA calls the &quot;transform&quot; of the object:
+<li>Bits 8 and 9 set what mGBA calls the "transform" of the object:
 <ul>
 <li>0 is no transform.</li>
 <li>1 is affine rendering. Which affine entry is used is set in attribute 1.</li>
-<li>2 is no transform and the object not drawn (it's &quot;disabled&quot;).</li>
+<li>2 is no transform and the object not drawn (it's "disabled").</li>
 <li>3 is just like 1 but the object is rendered with double size.</li>
 </ul>
 </li>
@@ -540,7 +542,7 @@ Alternately, you can do the position math using signed values and then <code>as<
 <li>Bit 12 sets if the object uses the Mosaic special effect.
 This can be enabled/disabled seprately from the other effects above.</li>
 <li>Bit 13 sets if the object uses 8bpp (bit set), or 4bpp (bit cleared).</li>
-<li>Bits 14 and 15 set the &quot;shape&quot; of the object. The exact dimensions also depend on the &quot;size&quot; set in attribute 1
+<li>Bits 14 and 15 set the "shape" of the object. The exact dimensions also depend on the "size" set in attribute 1
 <ul>
 <li>0 is square</li>
 <li>1 is wider</li>
@@ -571,7 +573,7 @@ This works basically the same as with the Y coordinate, but the screen is 260 pi
 <ul>
 <li>Bits 0 through 9 set the base tile index of the object.
 As mentioned above, in video modes 3, 4, and 5 this needs to be 512 or more.</li>
-<li>Bits 10 and 11 are the &quot;priority&quot; value.
+<li>Bits 10 and 11 are the "priority" value.
 Lower priority objects and layers are sorted closer to the viewer, and so they are what's seen if they overlap something farther away.
 Within a given priority layer, objects always draw over backgrounds, and lower index objects/backgrounds draw over higher index ones.</li>
 <li>Bits 12 through 15 set the palette bank the object uses if it's using 4bpp.</li>
@@ -580,8 +582,8 @@ Within a given priority layer, objects always draw over backgrounds, and lower i
 <p>There's a limit to how many objects can be drawn per scanline, but it's not a specific number of objects.
 Instead, the OAM engine has a buffer that's as wide as the screen, and there's a time limit per scanline on filling the buffer.</p>
 <ul>
-<li>When the &quot;Unlocked H-blank&quot; bit is <strong>clear</strong> in <code>DISPCNT</code> you get 1210 cycles (304 * 4 - 6)</li>
-<li>When the &quot;Unlocked H-blank&quot; bit is <strong>set</strong> in <code>DISPCNT</code> you get 954 cycles (240 * 4 - 6)</li>
+<li>When the "Unlocked H-blank" bit is <strong>clear</strong> in <code>DISPCNT</code> you get 1210 cycles (304 * 4 - 6)</li>
+<li>When the "Unlocked H-blank" bit is <strong>set</strong> in <code>DISPCNT</code> you get 954 cycles (240 * 4 - 6)</li>
 </ul>
 <p>The number of cycles each object consumes depends on the object's horizontal size:</p>
 <ul>
@@ -589,7 +591,7 @@ Instead, the OAM engine has a buffer that's as wide as the screen, and there's a
 <li>Affine objects consume <code>2 * width + 10</code> cycles.</li>
 </ul>
 <p>Objects are processed by their index order.
-Objects not on the current scanline, horizontally/vertically off-screen, or that are &quot;disabled&quot; as their attribute 0 transform, are skipped in rendering but still take two cycles to process.
+Objects not on the current scanline, horizontally/vertically off-screen, or that are "disabled" as their attribute 0 transform, are skipped in rendering but still take two cycles to process.
 Even when an object won't be drawn on the current scanline the OAM engine has to look at the attributes to know that.
 If not all objects are handled and time runs out then any unprocessed objects simply won't be drawn on this scanline.</p>
 <h2 id="showing-static-objects"><a class="header" href="#showing-static-objects">Showing Static Objects</a></h2>
@@ -597,7 +599,7 @@ If not all objects are handled and time runs out then any unprocessed objects si
 <p>First we want to set at least one tile in the object tile memory to some sort of pattern.
 If we write a hex <code>u32</code> literal, then each digit of the hex value will be 4 bits, so we can make a 4bpp tile pretty easy.
 One catch is that the indexes fill the tile from left to right, but we write numbers in code with the low-place-value digits on the right.
-So our &quot;tile&quot; as a <code>u32</code> literal will be left-right flipped from how it'll appear on the GBA:</p>
+So our "tile" as a <code>u32</code> literal will be left-right flipped from how it'll appear on the GBA:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>/// A tile with an extra notch on the upper left.
@@ -618,7 +620,7 @@ const TILE_UP_LEFT: [u32; 8] = [
 <span class="boring">}</span></code></pre></pre>
 <p>And we can copy the data into object tile 1 in our <code>main</code> function.</p>
 <pre><pre class="playground"><code class="language-rust">#[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);
@@ -653,7 +655,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 <span class="boring">}</span></code></pre></pre>
 <p>But when we make it taller instead, we see... just one tile?
 Why isn't there a second tile drawn below the first?</p>
-<p>This is that &quot;Linear object tile mapping&quot; flag from way back with the Display Control.
+<p>This is that "Linear object tile mapping" flag from way back with the Display Control.
 It defaults to <em>off</em>, so by default when we want to have an object more than 8 pixels tall, the next row of the object will use +32 indexes from the previous row.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -668,7 +670,7 @@ It defaults to <em>off</em>, so by default when we want to have an object more t
   DisplayControl::new().with_objects(true).with_linear_obj_tiles(true);
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);
@@ -723,7 +725,7 @@ The user will probably <em>want</em> to support signed positions so that stuff c
 <span class="boring">}</span></code></pre></pre>
 <p>And our final <code>main</code> goes like this:</p>
 <pre><pre class="playground"><code class="language-rust">#[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);

@@ -99,7 +99,9 @@
             <div class="sidebar-scrollbox">
                 <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="ex1.html"><strong aria-hidden="true">1.</strong> A Basic Executable</a></li><li class="chapter-item expanded "><a href="ex2.html"><strong aria-hidden="true">2.</strong> User Input</a></li><li class="chapter-item expanded "><a href="ex3.html"><strong aria-hidden="true">3.</strong> Objects / Sprites</a></li></ol>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
         </nav>
 
         <!-- Track and set sidebar scroll position -->
@@ -200,36 +202,36 @@
 <pre><code class="language-toml"># Cargo.toml
 
 [package]
-name = &quot;gba_from_scratch&quot;
-version = &quot;0.1.0&quot;
-edition = &quot;2021&quot;
+name = "gba_from_scratch"
+version = "0.1.0"
+edition = "2021"
 </code></pre>
 <p>And we want some sort of program to run so let's make an example called <code>ex1.rs</code> in the <code>examples/</code> directory.
-It can just be a classic &quot;Hello, World&quot; type program to start.</p>
+It can just be a classic "Hello, World" type program to start.</p>
 <pre><pre class="playground"><code class="language-rust">// examples/ex1.rs
 
 fn main() {
-  println!(&quot;hello&quot;);
+  println!("hello");
 }</code></pre></pre>
-<p>Since we're not running the compiler on the GBA itself, then we'll need to &quot;cross-compile&quot; our program.
-It's called &quot;cross compilation&quot; when you build a program for some system <em>other</em> than the system that you're running the compiler on.
-The system running the compiler is called the &quot;host&quot; system, and the system you're building for is called the &quot;target&quot; system.
+<p>Since we're not running the compiler on the GBA itself, then we'll need to "cross-compile" our program.
+It's called "cross compilation" when you build a program for some system <em>other</em> than the system that you're running the compiler on.
+The system running the compiler is called the "host" system, and the system you're building for is called the "target" system.
 In our case, the host system can be basically anything that can run a Rust toolchain.
 I've had success on Windows, Linux, and Mac, there's no big difficulties.</p>
 <p>To do a cross compile, we pass <a href="https://doc.rust-lang.org/cargo/commands/cargo-build.html#compilation-options">--target</a> to <code>cargo</code>.
 If we look up the <a href="https://en.wikipedia.org/wiki/Game_Boy_Advance">Game Boy Advance</a> on wikipedia, we can see that it has an <a href="https://en.wikipedia.org/wiki/ARM7#ARM7TDMI">ARM7TDMI</a> CPU.
-The &quot;ARM7T&quot; part means that it uses the &quot;ARMv4T&quot; CPU architecture.
-Now we go the <a href="https://doc.rust-lang.org/nightly/rustc/platform-support.html">Platform Support</a> page and use &quot;ctrl+F&quot; to look for &quot;ARMv4T&quot;.
+The "ARM7T" part means that it uses the "ARMv4T" CPU architecture.
+Now we go the <a href="https://doc.rust-lang.org/nightly/rustc/platform-support.html">Platform Support</a> page and use "ctrl+F" to look for "ARMv4T".
 We can see three(-ish) entries that might(?) be what we want.</p>
 <ul>
 <li><code>armv4t-none-eabi</code></li>
 <li><code>armv4t-unknown-linux-gnueabi</code></li>
 <li><code>thumbv4t-none-eabi</code></li>
 </ul>
-<p>This is the part where my &quot;teach like you're telling a story&quot; style breaks down a bit.
+<p>This is the part where my "teach like you're telling a story" style breaks down a bit.
 What should happen next is that we pick the <code>thumbv4t-none-eabi</code> target.
 Except there's not an easy to find document that tells you this step that I can just link to and have you read a few lines.
-The shortest version of the full explanation is something like &quot;Many ARM CPUs support two code 'states', and one of them is called '<a href="https://en.wikipedia.org/wiki/ARM_architecture_family#Thumb">thumb</a>', and that's the better default on the GBA.&quot;
+The shortest version of the full explanation is something like "Many ARM CPUs support two code 'states', and one of them is called '<a href="https://en.wikipedia.org/wiki/ARM_architecture_family#Thumb">thumb</a>', and that's the better default on the GBA."
 We can certainly talk more about that later, but for now you just gotta go with it.</p>
 <p>Let's see what happens when we pass <code>--target thumbv4t-none-eabi</code> as part of a call to <code>cargo</code>:</p>
 <pre><code>&gt;cargo build --example ex1 --target thumbv4t-none-eabi
@@ -256,7 +258,7 @@ note: not all platforms have the standard library pre-compiled: https://doc.rust
 help: consider using `cargo build -Z build-std` instead
 </code></pre>
 <p>Ah, dang.
-If we double check the Platform Support page we might see that <code>thumbv4t-none-eabi</code> is in the &quot;Tier 3&quot; section.
+If we double check the Platform Support page we might see that <code>thumbv4t-none-eabi</code> is in the "Tier 3" section.
 Tier 3 targets don't have a standard library available in <code>rustup</code>.</p>
 <p>How about this <code>build-std</code> thing?
 The <code>-Z</code> flags are all unstable flags, so we can check the <a href="https://doc.rust-lang.org/cargo/reference/unstable.html">unstable section</a> of the cargo manual.
@@ -322,7 +324,7 @@ Lets change the example.</p>
 #![no_std]
 
 fn main() {
-  println!(&quot;hello&quot;);
+  println!("hello");
 }
 </code></pre>
 <p>And we need to fix our <code>lib.rs</code> to also be <code>no_std</code>.
@@ -340,12 +342,12 @@ Here's the error.</p>
 error: cannot find macro `println` in this scope
  --&gt; examples/ex1.rs:4:3
   |
-4 |   println!(&quot;hello&quot;);
+4 |   println!("hello");
   |   ^^^^^^^
 
 error: `#[panic_handler]` function required, but not found
 
-error: could not compile `gba_from_scratch` (example &quot;ex1&quot;) due to 2 previous errors
+error: could not compile `gba_from_scratch` (example "ex1") due to 2 previous errors
 </code></pre>
 <p>Well, we can comment out the <code>println!</code>.
 For the panic handler, we go to the <a href="https://doc.rust-lang.org/reference/attributes.html">Attributes</a> part of the rust reference.
@@ -366,7 +368,7 @@ fn panic_handler(_: &amp;core::panic::PanicInfo) -&gt; ! {
    Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
 error: requires `start` lang_item
 
-error: could not compile `gba_from_scratch` (example &quot;ex1&quot;) due to previous error
+error: could not compile `gba_from_scratch` (example "ex1") due to previous error
 </code></pre>
 <p>Alright so what's this <code>start</code> lang item deal?
 Well it has to do with the operating system being able to run your executable.
@@ -398,7 +400,7 @@ warning: function `main` is never used
   |
   = note: `#[warn(dead_code)]` on by default
 
-warning: `gba_from_scratch` (example &quot;ex1&quot;) generated 1 warning
+warning: `gba_from_scratch` (example "ex1") generated 1 warning
     Finished dev [unoptimized + debuginfo] target(s) in 0.64s
 </code></pre>
 <p>Okay.
@@ -411,8 +413,8 @@ On my Windows machine I just made a copy of <code>mgba.exe</code> that's called 
 <pre><code>&gt; mgba target/thumbv4t-none-eabi/debug/examples/ex1
 </code></pre>
 <p>The emulator starts and then... shows a dialog box.
-&quot;An error occurred.&quot; says the box's title bar.
-&quot;Could not load game. Are you sure it's in the correct format?&quot;
+"An error occurred." says the box's title bar.
+"Could not load game. Are you sure it's in the correct format?"
 Well, sorry mgba, but we're not sure it's in the correct format.
 In fact, we're pretty sure it's <em>not</em> the correct format right now.
 I guess we'll have to inspect the compilation output.</p>
@@ -423,7 +425,7 @@ This includes our <code>thumbv4t</code> program, as well as other variants of AR
 You can get it from their website, or if you're on a Linux you can probably get it from your package manager.</p>
 <p>The binutils package for a target family has many individual tools.
 The ones we'll be using will all be named <code>arm-none-eabi-</code> to start, to distinguish them from the same tool for other targets.
-So if we want to use &quot;objdump&quot; we call it with <code>arm-none-eabi-objdump</code> and so on.
+So if we want to use "objdump" we call it with <code>arm-none-eabi-objdump</code> and so on.
 That's exactly what we want to use right now.
 We pass the name of the compiled executable, and then whichever other options we want.
 For now let's look at the <code>--section-headers</code></p>
@@ -462,18 +464,18 @@ Idx Name          Size      VMA       LMA       File off  Algn
 </ul>
 <p>Which means... according to the chart... none of this data would end up in the ROM?
 I guess that means that, if we extracted our raw program from the <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> container file that the compiler uses, we would end up with a totally blank ROM.
-That certainly doesn't sound like what mgba would call the &quot;correct format&quot;.</p>
+That certainly doesn't sound like what mgba would call the "correct format".</p>
 <h2 id="linker-scripts"><a class="header" href="#linker-scripts">Linker Scripts</a></h2>
 <p>What's wrong is that we need to adjust the <a href="https://sourceware.org/binutils/docs/ld/Scripts.html">linker script</a>.
 That link goes to the documentation for the binutils linker (called <code>ld</code>), and technically we're actually using the linker that ships with the compiler (called <code>rust-lld</code>).
-<code>rust-lld</code> is the Rust version of <code>lld</code>, which is LLVM's linker that's intended to be a &quot;drop in&quot; replacement for GNU's <code>ld</code>.
+<code>rust-lld</code> is the Rust version of <code>lld</code>, which is LLVM's linker that's intended to be a "drop in" replacement for GNU's <code>ld</code>.
 Both linkers use a linker script system, and they both even use the same linker script format.
-I tried to find an in depth manual for <code>lld</code> specifically, but all I could find was the top level &quot;man page&quot; explanations.
+I tried to find an in depth manual for <code>lld</code> specifically, but all I could find was the top level "man page" explanations.
 Referring to the the GNU <code>ld</code> manual will have to do.</p>
-<p>You don't have to read the whole manual, the short story goes like this: linkers take one or more &quot;object&quot; files and &quot;link&quot; them into a single &quot;executable&quot; file.
+<p>You don't have to read the whole manual, the short story goes like this: linkers take one or more "object" files and "link" them into a single "executable" file.
 The linker script is what guides the linker in exactly what to do.
 If you don't say what script to use then the linker will use a default linker script that it keeps wherever.
-When the target is a &quot;normal&quot; target like Windows or Mac then using a default linker script is just fine.
+When the target is a "normal" target like Windows or Mac then using a default linker script is just fine.
 When the target is something a little more esoteric, like most embedded devices, including the GBA, then the default won't be good enough.
 We'll have to write our own script and make the linker use that.</p>
 <p>One complexity here is that the linker script to use is an argument passed to the linker.
@@ -484,26 +486,26 @@ As much as possible we'd like <code>cargo build</code> to work.
 We could use a <code>build.rs</code> file to pass an arg to the linker, but making a build script just to pass one argument seems like maybe overkill.
 Probably we should just set it as part of our the <code>RUSTFLAGS</code> environment variable.
 The catch with <code>RUSTFLAGS</code> is that any time you change it you have to build <em>the entire crate graph</em> again.
-We want to &quot;write it down&quot; (so to speak) and have it automatically be the same every time.
+We want to "write it down" (so to speak) and have it automatically be the same every time.
 This can be done with a <a href="https://doc.rust-lang.org/cargo/reference/config.html#configuration">cargo configuration</a> file.</p>
 <p>First let's make a blank <code>normal_boot.ld</code> file in a <code>linker_scripts/</code> folder.
 Then in the <code>.cargo</code> folder we fill in <code>config.toml</code></p>
 <pre><code class="language-toml"># .cargo/config.toml
 
 [target.thumbv4t-none-eabi]
-rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+rustflags = ["-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
 </code></pre>
 <p>while we're at it, we can even set a default target (which is used when we don't specify <code>--target</code>, and we can configure for <code>build-std</code> to be automatically be used, all in the same file.</p>
 <pre><code class="language-toml"># .cargo/config.toml
 
 [unstable]
-build-std = [&quot;core&quot;]
+build-std = ["core"]
 
 [build]
-target = &quot;thumbv4t-none-eabi&quot;
+target = "thumbv4t-none-eabi"
 
 [target.thumbv4t-none-eabi]
-rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+rustflags = ["-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
 </code></pre>
 <p>Great, let's try it out</p>
 <pre><code>&gt; cargo build --example ex1
@@ -515,14 +517,14 @@ warning: function `main` is never used
   |
   = note: `#[warn(dead_code)]` on by default
 
-warning: `gba_from_scratch` (example &quot;ex1&quot;) generated 1 warning
+warning: `gba_from_scratch` (example "ex1") generated 1 warning
     Finished dev [unoptimized + debuginfo] target(s) in 0.10s
 </code></pre>
 <p>Cool.
 It's a lot less to type, and we're ready to fill in our linker script.</p>
 <p>Our linker script is called <code>normal_boot.ld</code> because there's two ways for the GBA to boot up.
-One of them is the &quot;normal&quot; style with a program running off of the game pak.
-The other is &quot;multiboot&quot; where the GBA can download a program over the link cable.
+One of them is the "normal" style with a program running off of the game pak.
+The other is "multiboot" where the GBA can download a program over the link cable.
 Since we might want to do multiboot some day, we might as well give our linker script a specific name to start with.
 Once things are set up we won't really have to think about it on a regular basis, so it's fine.</p>
 <p>There's three things we'll have to concern ourselves with:</p>
@@ -587,7 +589,7 @@ SECTIONS {
   } &gt;rom
 }
 </code></pre>
-<p>This isn't a complete and &quot;final&quot; linker script, but for now it's enough to let us proceed.</p>
+<p>This isn't a complete and "final" linker script, but for now it's enough to let us proceed.</p>
 <p>If we rebuild the program right now we still won't get anything in the output <code>.text</code> section.
 Remember that dead code warning we keep getting on our <code>main</code> function?
 Nothing in our program ever calls <code>main</code>, and it's not public for outsiders to call, so it gets discarded during linking.
@@ -602,7 +604,7 @@ When the GBA first boots the BIOS (which is part of the GBA itself, not part of 
 It and plays the boot animation and sound that you're probably familiar with, then does a checksum on our ROM's header data.
 If the checksum passes the BIOS jumps control to <code>0x0800_0000</code> (the start of ROM).
 That's where our <code>_start</code> will be.
-The first instruction can be &quot;anything&quot; but immediateley after that is the rest of the header data.
+The first instruction can be "anything" but immediateley after that is the rest of the header data.
 That means that in practice the very first instruction of <code>_start</code> has to be a jump <em>past</em> the rest of the header data, since the header data isn't executable code.</p>
 <p>Sticking non-executable data into the middle of a function isn't something that the compiler is really capable of dealing with, so we'll have to take direct control of the situation.
 We could do this using either <a href="https://doc.rust-lang.org/core/arch/macro.global_asm.html">global_assembly!</a> or a <a href="https://github.com/rust-lang/rust/issues/90957">#[naked]</a> function.
@@ -616,8 +618,8 @@ In addition to marking it as <code>#[naked]</code>, we also mark it <code>#[no_m
 We need to use <code>#[instruction_set(arm::a32)]</code> as well.
 This is part of that arm/thumb thing from before.
 Because the BIOS jumps to the start of the ROM with the CPU in a32 mode, our function must be encoded appropriately.
-Since <code>_start</code> has got to specifically at the very start of the ROM we'll use <code>#[link_section = &quot;.text._start&quot;]</code> to assign our function a specific section name we can use in our linker script.
-Since <code>_start</code> is going to be &quot;called&quot; by the outside world we have to assign it the <code>extern &quot;C&quot;</code> ABI.
+Since <code>_start</code> has got to specifically at the very start of the ROM we'll use <code>#[link_section = ".text._start"]</code> to assign our function a specific section name we can use in our linker script.
+Since <code>_start</code> is going to be "called" by the outside world we have to assign it the <code>extern "C"</code> ABI.
 Since it should never return we will mark the return type as <code>-&gt; !</code>.
 So far it all looks like this:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -627,8 +629,8 @@ So far it all looks like this:</p>
 #[naked]
 #[no_mangle]
 #[instruction_set(arm::a32)]
-#[link_section = &quot;.text._start&quot;]
-unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+#[link_section = ".text._start"]
+unsafe extern "C" fn _start() -&gt; ! {
   todo!()
 }
 <span class="boring">}</span></code></pre></pre>
@@ -640,9 +642,9 @@ Let's look at it on its own.</p>
 1:
 b 1b
 </code></pre>
-<p>In the first line we branch (<code>b</code>) to the label <code>1</code> that is &quot;forward&quot; from the instruction (<code>1f</code>).</p>
+<p>In the first line we branch (<code>b</code>) to the label <code>1</code> that is "forward" from the instruction (<code>1f</code>).</p>
 <p>Then with <code>.space</code> we put 0xE0 blank bytes.
-This is called a &quot;directive&quot;, it doesn't emit an instruction directly, instead it tells the assembler to do a special action.
+This is called a "directive", it doesn't emit an instruction directly, instead it tells the assembler to do a special action.
 We can tell it's a directive because it has a <code>.</code> at the beginning.
 The blank space is where the header data can go when we need to fill it in.
 mgba doesn't check the header, so during development it's fine to leave the header blank.
@@ -657,7 +659,7 @@ When you jump to a numbered label (forward or back), it just jumps to the closes
 Note that a label <em>can</em> have something else on the same line following the <code>:</code>.
 Usually a label will be on a line of its own so that it stands out a little more in the code, but that's just a code style thing.
 Something can follow a label on the same line as well.
-If a label is on a line of its own, the label &quot;points to&quot; the next line that has a non-label thing on it.
+If a label is on a line of its own, the label "points to" the next line that has a non-label thing on it.
 You can also have more than one label point at the same line, if necessary.</p>
 <p>Finally, our second actual instruction is that we want to branch backward to the label <code>1</code>.
 Since that <code>1</code> label points at the branch itself, this instruction causes an infinite loop.
@@ -671,13 +673,14 @@ So when we put it all together we get this:</p>
 
 #[naked]
 #[no_mangle]
-#[link_section = &quot;.text._start&quot;]
-unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+#[instruction_set(arm::a32)]
+#[link_section = ".text._start"]
+unsafe extern "C" fn _start() -&gt; ! {
   core::arch::asm! {
-    &quot;b 1f&quot;,
-    &quot;.space 0xE0&quot;,
-    &quot;1:&quot;,
-    &quot;b 1b&quot;,
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "b 1b",
     options(noreturn)
   }
 }
@@ -743,13 +746,13 @@ Caused by:
   %1 is not a valid Win32 application. (os error 193)
 </code></pre>
 <p>Ah, right, Windows doesn't know how to run GBA programs, of course.</p>
-<p>Instead, let's adjust the <code>.cargo/config.toml</code> to set a &quot;runner&quot; value in our target confituration.
+<p>Instead, let's adjust the <code>.cargo/config.toml</code> to set a "runner" value in our target confituration.
 When we have a runner set, <code>cargo run</code> will call the runner program and pass the program we picked as the first argument.</p>
 <pre><code class="language-toml"># .cargo/config.toml 
 
 [target.thumbv4t-none-eabi]
-rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
-runner = &quot;mgba-qt&quot; #remove the -qt part if you're on Windows!
+rustflags = ["-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
+runner = "mgba-qt" #remove the -qt part if you're on Windows!
 </code></pre>
 <p>And so we try again</p>
 <pre><code>&gt; cargo run --example ex1
@@ -792,7 +795,7 @@ We've got so much ROM space available that an occasional 2 or 4 bytes extra won'
 <h2 id="proving-our-program-is-doing-something"><a class="header" href="#proving-our-program-is-doing-something">Proving Our Program Is Doing Something</a></h2>
 <p>It's all nice and well to see a white screen, but let's finish up this section by having our program do something, anything at all, which lets us see that we're really having an effect on the GBA.</p>
 <p>The simplest thing to do would be to make the screen turn on black instead of white.
-When the BIOS transfers control to our program a thing called the &quot;forced blank&quot; mode is active.
+When the BIOS transfers control to our program a thing called the "forced blank" mode is active.
 This makes the display draw all pixels as white.
 If we turn off the forced blank bit we'll get a black screen instead.</p>
 <p>All we have to do is add a few more lines of assembly to our <code>_start</code> function:</p>
@@ -801,14 +804,14 @@ If we turn off the forced blank bit we'll get a black screen instead.</p>
 </span>// in `main` of ex1.rs
 
   core::arch::asm! {
-    &quot;b 1f&quot;,
-    &quot;.space 0xE0&quot;,
-    &quot;1:&quot;,
-    &quot;mov r0, #0x04000000&quot;,
-    &quot;mov r1, #0&quot;,
-    &quot;strh r1, [r0]&quot;,
-    &quot;2:&quot;,
-    &quot;b 2b&quot;,
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "mov r0, #0x04000000",
+    "mov r1, #0",
+    "strh r1, [r0]",
+    "2:",
+    "b 2b",
     options(noreturn)
   }
 <span class="boring">}</span></code></pre></pre>
@@ -817,7 +820,7 @@ If we turn off the forced blank bit we'll get a black screen instead.</p>
 mov r1, #0
 strh r1, [r0]
 </code></pre>
-<p><code>mov</code> will &quot;move&quot; a value into a register.
+<p><code>mov</code> will "move" a value into a register.
 This shares the usual assignment syntax of Rust and most other programming languages:
 the destination register is on the left,
 and the source data to move into that register is on the right.
@@ -826,16 +829,16 @@ So you could think of it being <em>similar</em> to</p>
 </span><span class="boring">fn main() {
 </span>let r0 = 0x04000000;
 <span class="boring">}</span></code></pre></pre>
-<p>The <code>#</code> means that the value is an &quot;immediate&quot; value.
-It gets encoded into the instruction itself, so it doesn't have to &quot;come from&quot; anywhere else.
+<p>The <code>#</code> means that the value is an "immediate" value.
+It gets encoded into the instruction itself, so it doesn't have to "come from" anywhere else.
 With LLVM's assembler it seems like actually putting the <code>#</code> before an immediate value is optional (that is: the program will compile the same without it),
 but on some assemblers putting the <code>#</code> is required, so I'll be putting it in the tutorial code.</p>
 <p>After we move values into <code>r0</code> and <code>r1</code> we have a <code>strh</code>.
-This will &quot;store(half)&quot; the data in the first argument to the address in the second argument.
+This will "store(half)" the data in the first argument to the address in the second argument.
 In other words, it writes the lower 16 bits of the register to the address, as if the address was a <code>*mut u16</code>.
 The argument order for single loads and stores on ARM is that the address is always last, and in square brackets.
 The square brackets make it fairly easy to spot when skimming through a big pile of assembly.</p>
-<p>After doing that <code>strh</code> we have an &quot;empty loop&quot; like we had before, but just using the label <code>2</code> instead of <code>1</code> this time.</p>
+<p>After doing that <code>strh</code> we have an "empty loop" like we had before, but just using the label <code>2</code> instead of <code>1</code> this time.</p>
 <p>And if we turn on the program...</p>
 <pre><code class="language-txt">cargo run --example ex1
 </code></pre>
@@ -856,15 +859,15 @@ That will be our goal for this part.</p>
 mov r1, #0
 strh r1, [r0]
 </code></pre>
-<p>This &quot;resets the forced blank bit&quot;, and that lets the display show the normal picture instead of all white.
+<p>This "resets the forced blank bit", and that lets the display show the normal picture instead of all white.
 At the moment our normal picture is all black, but soon it will be something else.</p>
 <p>What's happening is called Memory Mapped Input/Output, or Memory Mapped IO, or even just MMIO.</p>
 <p>The CPU only knows how to do math and access memory.
-What &quot;accessing memory&quot; actually means is that a signal goes along a &quot;bus&quot;.
-The signal can be pushed out to other hardware (&quot;store&quot;), or be pulled in from the other hardware (&quot;load&quot;).
+What "accessing memory" actually means is that a signal goes along a "bus".
+The signal can be pushed out to other hardware ("store"), or be pulled in from the other hardware ("load").
 When the signal's address points a memory device it's how we store data for later.
 There's also other types of device too, things that don't just store data.
-When the signal goes there, &quot;other stuff&quot; happens.</p>
+When the signal goes there, "other stuff" happens.</p>
 <p>The address <code>0x04000000</code> connects to a part of the display system called the Display Control.
 When we set the display control's bits to <code>0_u16</code> with our <code>strh</code> instruction, that includes the forced blank bit.
 There's other bits too, which we'll get to soon.</p>
@@ -874,18 +877,18 @@ so most of this series will involve explaining MMIO address values and the corre
 <ul>
 <li>Sometimes an address will be read-only (writes are totally ignored) or write-only (reading produces garbage data).</li>
 <li>Sometimes an address will allow both reads and writes, but what you read back will be something else from what you last wrote.</li>
-<li>This is <em>not</em> the case with any of the GBA's MMIO, but on some other devices (eg: the NES) reading an MMIO location can be &quot;destructive&quot;, changing the value just by reading it.</li>
+<li>This is <em>not</em> the case with any of the GBA's MMIO, but on some other devices (eg: the NES) reading an MMIO location can be "destructive", changing the value just by reading it.</li>
 </ul>
 <h2 id="volatile-memory-access"><a class="header" href="#volatile-memory-access">Volatile Memory Access</a></h2>
 <p>Normally the compiler will try to keep memory accesses to a minimum.
 If it sees you read an address twice without a write in between, it'll (usually) only do the first read.
 If you write to an address twice without a read in between it'll (usually) skip the first write.
-I say &quot;usually&quot; because it depends on optimization level and such.
+I say "usually" because it depends on optimization level and such.
 It's simple stuff, but it makes programs fast, and we want our programs fast.</p>
 <p>However, when working with MMIO every single memory access has to happen <em>exactly</em> as we write it in our program.
 If we're (for example) reading the address for the button data then <em>of course</em> we'd read it over and over without ever doing a write.
 But we still need every single read to actually happen so we can get the newest button data.</p>
-<p>To tell the compiler this, we use a &quot;volatile&quot; load or store instead of a normal load or store.
+<p>To tell the compiler this, we use a "volatile" load or store instead of a normal load or store.
 This is done with the <a href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html#method.read_volatile">read_volatile</a> and <a href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html#method.write_volatile">write_volatile</a> pointer methods.
 But those are <code>unsafe</code> methods because the compiler naturally doesn't know if, for any given pointer, it's safe to just read or write some data.
 Pointers can come from anywhere, they might be dangling, etc etc, all the normal problems with raw pointers.</p>
@@ -914,7 +917,7 @@ Neato.</p>
 <h2 id="moving-_start-into-the-library"><a class="header" href="#moving-_start-into-the-library">Moving <code>_start</code> Into The Library</a></h2>
 <p>When we made <code>ex1.rs</code> we put the <code>_start</code> function directly into the example file.
 That's not a great long term plan.
-We want to have a <code>_start</code> function that just does the correct startup &quot;in the background&quot;, automatically.
+We want to have a <code>_start</code> function that just does the correct startup "in the background", automatically.
 We don't want to be thinking about it again with each new example we make.</p>
 <p>So first let's copy the <code>_start</code> function into <code>lib.rs</code>.
 This will require us to put <code>#![feature(naked_functions)]</code> at the top of <code>lib.rs</code>.
@@ -923,7 +926,7 @@ Again, we <em>could</em> use global assembly instead, but I think that global as
 That's fine, except that right now <code>_start</code> doesn't have a way to call any function in our executable.</p>
 <p>We're gonna rewrite <code>_start</code> to do whatever startup it needs and <em>then</em> we'll have it call another function.
 If we pick an un-mangled name for the function that <code>_start</code> calls each executable we make will be able to make a function with that name and the linker will weave it all together just fine.
-Since it's the conventional &quot;beginning of the program&quot; name let's use <code>main</code>.</p>
+Since it's the conventional "beginning of the program" name let's use <code>main</code>.</p>
 <p>First we update <code>_start</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -931,14 +934,14 @@ Since it's the conventional &quot;beginning of the program&quot; name let's use 
 #[naked]
 #[no_mangle]
 #[instruction_set(arm::a32)]
-#[link_section = &quot;.text._start&quot;]
-unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+#[link_section = ".text._start"]
+unsafe extern "C" fn _start() -&gt; ! {
   core::arch::asm! {
-    &quot;b 1f&quot;,
-    &quot;.space 0xE0&quot;,
-    &quot;1:&quot;,
-    &quot;ldr r12, =main&quot;,
-    &quot;bx r12&quot;,
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "ldr r12, =main",
+    "bx r12",
     options(noreturn)
   }
 }
@@ -947,14 +950,14 @@ unsafe extern &quot;C&quot; fn _start() -&gt; ! {
 <pre><code class="language-arm">ldr r12, =main
 bx r12
 </code></pre>
-<p>The first line, <code>ldr &lt;reg&gt;, =symbol</code>, is a special &quot;pseudo instruction&quot;.
+<p>The first line, <code>ldr &lt;reg&gt;, =symbol</code>, is a special "pseudo instruction".
 It looks like an instruction, but what the assembler actually outputs is a slight variation.
 What will happen is that the assembler will insert a load operation for an address relative to this instruction, and then at that relative address the assembler will also insert the address of <code>main</code> itself.
 This way we don't have to know where <code>main</code> is.
 In fact we don't even have to have defined <code>main</code> at all.
 That's good, because our library won't define <code>main</code> anyway.
 As long as the final executable defines <code>main</code> <em>somewhere</em> the linker will patch it all together.</p>
-<p>The second line <code>bx &lt;reg&gt;</code> is a &quot;branch-exchange&quot;.
+<p>The second line <code>bx &lt;reg&gt;</code> is a "branch-exchange".
 This is a special kind of branch that we have to use with ARMv4T when we want to switch between ARM code (a32) and Thumb code (t32).
 It switches to the correct code mode as part of the jumping the program's execution to the new address.
 The <code>_start</code> function <em>must</em> be written in a32 code, but most of the rest of the program, including <code>main</code>, could be written in either code type.
@@ -962,17 +965,17 @@ Since <code>main</code> might be a different code type from <code>_start</code> 
 (note: there's a third type of branch on the GBA called <code>bl</code>, which we'll see eventually).</p>
 <p>While <code>b</code> instruction jumped to a <em>label</em>, <code>bx</code> jumps to a <em>register</em>.
 That's why we have to load <code>main</code> into <code>r12</code> before we can use <code>bx</code>.
-I picked <code>r12</code> in this case just because the convention is that it's a &quot;scratch&quot; register.
+I picked <code>r12</code> in this case just because the convention is that it's a "scratch" register.
 With the C ABI the caller will never pass data through <code>r12</code>, and functions are allowed to modify <code>r12</code> without restoring the value before they return.</p>
 <p>That's all that <code>_start</code> has to do for now.
 Later it will have some setup work to do before calling <code>main</code>, but not yet.</p>
 <h3 id="this-is-an-incomplete-start-function"><a class="header" href="#this-is-an-incomplete-start-function">This Is An Incomplete Start Function</a></h3>
-<p><strong>NOTE:</strong> This <code>_start</code> function is &quot;incomplete&quot; in the sense that it doesn't initialize RAM.
+<p><strong>NOTE:</strong> This <code>_start</code> function is "incomplete" in the sense that it doesn't initialize RAM.
 This means that you can't use any static mutable data with non-zero initial values.
 We're not doing that right now, so that's not a problem for us right now, and we'll get to that eventually.
 But it is a non-obvious limitation worth mentioning.</p>
 <h2 id="adding-main-to-ex2rs"><a class="header" href="#adding-main-to-ex2rs">Adding <code>main</code> To <code>ex2.rs</code></a></h2>
-<p>Now in <code>ex2.rs</code> we need to have a <code>main</code> function that's <code>no_mangle</code>, <code>extern &quot;C&quot;</code>, and that doesn't ever return.</p>
+<p>Now in <code>ex2.rs</code> we need to have a <code>main</code> function that's <code>no_mangle</code>, <code>extern "C"</code>, and that doesn't ever return.</p>
 <p>To begin, we'll make the actual body of <code>main</code> just do what we were doing before.
 First write 0 to <code>DISPCNT</code>, and then do a <code>loop</code> forever.</p>
 <pre><pre class="playground"><code class="language-rust">// ex2.rs
@@ -982,7 +985,7 @@ First write 0 to <code>DISPCNT</code>, and then do a <code>loop</code> forever.<
 use gba_from_scratch::DISPCNT;
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   DISPCNT.write(0);
   loop {}
 }
@@ -998,7 +1001,7 @@ That's not either of the types of screen that we got before.
 Here's where things get kinda weird.
 If we run our program in <code>--release</code> mode we <em>don't</em> see the line.</p>
 <p>Let's look at the output of the compiler again with <code>objdump</code>.
-In fact, now that we've got more than one example let's have a script to store that &quot;use objdump&quot; stuff.
+In fact, now that we've got more than one example let's have a script to store that "use objdump" stuff.
 I'm gonna make a <code>dump.bat</code>, but you can make <code>dump.sh</code> if you're on Mac or Linux.
 It's just a few plain commands, no special scripting.</p>
 <pre><code class="language-bat">cargo build --examples
@@ -1140,15 +1143,15 @@ opt-level = 3
 Now we don't get the white line.</p>
 <p>Why did we get it before?
 I don't know exactly.
-Our <code>ex2</code> program &quot;stops&quot; on an infinite loop that's just as fast as the <code>ex1</code> version, even if it takes longer to get there.
+Our <code>ex2</code> program "stops" on an infinite loop that's just as fast as the <code>ex1</code> version, even if it takes longer to get there.
 I'd have thought that it wouldn't make a difference, but somehow it does.
 Emulators are weird like that sometimes.</p>
 <p>Oh, and speaking of weird stuff, while we're adjusting build configuration things, I found out about that undefined instruction thing.
 Our good friend Scott wrote in (so to speak) and suggested trying <code>-Ztrap-unreachable=no</code> in RUSTFLAGS.</p>
 <p>So we just add it in the <code>.cargo/config.toml</code>:</p>
 <pre><code class="language-toml">[target.thumbv4t-none-eabi]
-rustflags = [&quot;-Ztrap-unreachable=no&quot;, &quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
-runner = &quot;mgba-qt&quot;
+rustflags = ["-Ztrap-unreachable=no", "-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
+runner = "mgba-qt"
 </code></pre>
 <p>and rebuild / redump again...</p>
 <pre><code class="language-txt">Disassembly of section .text:
@@ -1169,11 +1172,11 @@ runner = &quot;mgba-qt&quot;
 </code></pre>
 <p>The undefined instruction is gone!
 Magical!
-I guess the explanation is that LLVM is trying to add in a &quot;guard&quot; against code accidentally flowing past the end of the function.
-When the CPU is made to execute and undefined instruction it causes a special kind of &quot;interrupt&quot; to happen.
-We'll mostly talk about interrupts later, but for now let's just say that what LLVM is <em>expecting</em> is that the Operating System will handle the interrupt by killing the program (the undefined instruction &quot;traps&quot; your program).
+I guess the explanation is that LLVM is trying to add in a "guard" against code accidentally flowing past the end of the function.
+When the CPU is made to execute and undefined instruction it causes a special kind of "interrupt" to happen.
+We'll mostly talk about interrupts later, but for now let's just say that what LLVM is <em>expecting</em> is that the Operating System will handle the interrupt by killing the program (the undefined instruction "traps" your program).
 We don't really have an OS on the GBA, we <em>are</em> the OS you might say.
-Regardless of what you call it, that undefined instruction won't &quot;trap&quot; like LLVM thinks it will.
+Regardless of what you call it, that undefined instruction won't "trap" like LLVM thinks it will.
 The undefined interrupt handler in the BIOS just returns and the device just keeps executing.
 So that undefined instruction is purely a waste of space to us.</p>
 <p>We might as well leave <code>-Ztrap-unreachable=no</code> set in our configuration.
@@ -1190,7 +1193,7 @@ If we have to be on Nightly for <code>build-std</code>, we might as well take ad
  80000ec:	.word	0x080000f1
 </code></pre>
 <p>So the <code>ldr r12, =main</code> has become <code>ldr	r12, [pc]</code>.
-The <code>pc</code> register is the &quot;program counter&quot;.
+The <code>pc</code> register is the "program counter".
 That's storing the next address for the CPU to read and start doing an instruction.
 The ARM7TDMI has a 3 stage CPU pipeline: Fetch, Decode, Execute.
 The <code>pc</code> register will always be pointing <em>two instructions</em> ahead of what instruction is actually executing.
@@ -1199,15 +1202,15 @@ The <code>.word</code> directive inserts a literal 4 byte value, in this case <c
 That's the address of <code>main</code>, +1.
 The +1 part makes the address odd, which is how <code>bx</code> will know what code state to switch to.</p>
 <p>So after we load an address into <code>r12</code>, we use <code>bx</code> to branch-exchange to that address.
-The &quot;exchange&quot; part is because there's a register called the &quot;current program status register&quot;.
+The "exchange" part is because there's a register called the "current program status register".
 This register holds several bit flags about the program's current status.
 Importantly it has a T flag, which says if the CPU is running in thumb state or not.
-A branch-exchange will &quot;exchange&quot; the lowest bit in the register holding the target address with the current value of the T flag.</p>
+A branch-exchange will "exchange" the lowest bit in the register holding the target address with the current value of the T flag.</p>
 <ul>
 <li>If the target address is odd then the T flag becomes set (the program will run as thumb code).</li>
 <li>If the target address is even then the T flag becomes cleared (the program will run as arm code).</li>
 </ul>
-<p>And I know it's an &quot;exchange&quot;, but the <em>previous</em> T value basically goes nowhere.
+<p>And I know it's an "exchange", but the <em>previous</em> T value basically goes nowhere.
 They just call it an exchange to give it a fancy name, I guess.</p>
 <p>I hope that wasn't too much.
 If not, don't worry.
@@ -1222,7 +1225,7 @@ It's not essential to understand the full details right away if you want to just
 </code></pre>
 <p>Ah, here's something interesting.
 Instead of <code>mov</code> we're doing <code>movs</code>, and instead of <code>lsl</code> (logical shift left) we're doing <code>lsls</code>.
-When an instruction ends with <code>s</code> then it &quot;sets the status flags&quot;.</p>
+When an instruction ends with <code>s</code> then it "sets the status flags".</p>
 <ul>
 <li><code>_start</code> is ARM code, and most all ARM instructions can choose to set the flags or not. We haven't set the status flags in our small amount of code so far.</li>
 <li><code>main</code> is thumb code, and most all thumb instructions are forced to set the flags. This constraints how much you can reorder your instructions. Each operation that sets flags you care about has to come <em>just before</em> whatever the thing using those flags is.</li>
@@ -1248,19 +1251,19 @@ Instead, it stores <code>mov</code> and a compressed form of the data: <code>1&l
 But thumb code is only 16 bits, so it can't even store that much.
 Since each thumb instruction is only 2 bytes instead of 4, there's less bits to fit immediate values and do instruction variations and such.
 This means that in a lot of cases an operation that's one ARM instruction will be more than one thumb instruction.
-Because of this, thumb code vs ARM code is <em>not</em> as simple as &quot;your program is half as big&quot;.
+Because of this, thumb code vs ARM code is <em>not</em> as simple as "your program is half as big".
 You get a significant savings on average, but the exact ratio depends on the program</p>
 <p>We can see the disassembler is showing our <code>strh</code> as <code>strh	r1, [r0, #0]</code>.
-This is saying &quot;<code>r0</code> plus 0&quot;.
-Actually any store or load can be &quot;plus some immediate value&quot;, but when the modifier is plus 0 we don't need to write it.
+This is saying "<code>r0</code> plus 0".
+Actually any store or load can be "plus some immediate value", but when the modifier is plus 0 we don't need to write it.
 In this case, the disassembler is just being a little silly in how it prints things.</p>
-<p>Also, when we see <code>b.n	80000f8</code>, this <code>b.n</code> means &quot;branch instruction with narrow encoding&quot;.
-The explanation here is that in later versions of ARM there was a &quot;thumb 2&quot; introduced.
+<p>Also, when we see <code>b.n	80000f8</code>, this <code>b.n</code> means "branch instruction with narrow encoding".
+The explanation here is that in later versions of ARM there was a "thumb 2" introduced.
 In thumb 2, some instructions will be encoded as one opcode (each of which is two bytes), but then other uses will be two opcodes.
-The <code>.n</code> is the &quot;narrow&quot; encoding, meaning it's the one opcode version.
+The <code>.n</code> is the "narrow" encoding, meaning it's the one opcode version.
 On the GBA we don't use thumb2 at all, but since the <code>objdump</code> program is designed to work with all versions of ARM it just prints this way.</p>
 <h2 id="the-backdrop-color"><a class="header" href="#the-backdrop-color">The Backdrop Color</a></h2>
-<p>The &quot;backdrop&quot; color is the color that's shown in a pixel if no background layer or object is visible in that pixel.
+<p>The "backdrop" color is the color that's shown in a pixel if no background layer or object is visible in that pixel.
 Right now when we turn off forced blank we see a black screen because the backdrop color is black.
 If we were to change the backdrop color we'd see the whole screen filled with some other color.</p>
 <p>First let's declare an MMIO for the backdrop color.</p>
@@ -1275,7 +1278,7 @@ pub const BACKDROP: VolAddress&lt;u16, Safe, Safe&gt; =
 use gba_from_scratch::{BACKDROP, DISPCNT};
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(0b11111);
   DISPCNT.write(0);
   loop {}
@@ -1302,12 +1305,12 @@ Otherwise you can get accidental display artifacts on the screen.</p>
 A GBA color value is a <code>u16</code> with the channels going from low to high:</p>
 <pre><code>0bX_BBBBB_GGGGG_RRRRR
 </code></pre>
-<p>So <code>0b11111</code> is &quot;full red, no green or blue&quot;.</p>
+<p>So <code>0b11111</code> is "full red, no green or blue".</p>
 <p>Using a raw <code>u16</code> isn't that great.
 We'd probably like to have a little bit more meaning to the type so that it's clearer what's going on.
 We can put names on our functions and magic values, things like that.</p>
 <p>If we replace the <code>u16</code> in <code>BACKDROP</code> with a <code>repr(transparent)</code> wrapper type over an actual <code>u16</code> then things will be a lot better.
-This is called using a &quot;newtype&quot;, and we'll be doing it a lot.</p>
+This is called using a "newtype", and we'll be doing it a lot.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>// in lib.rs
@@ -1331,7 +1334,7 @@ impl Color {
 <pre><pre class="playground"><code class="language-rust">use gba_from_scratch::{Color, BACKDROP, DISPCNT};
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::RED);
   DISPCNT.write(0);
   loop {}
@@ -1355,7 +1358,7 @@ We've got a zero-runtime-cost abstraction, the promise of Rust is real!</p>
 <h2 id="reading-the-buttons"><a class="header" href="#reading-the-buttons">Reading The Buttons</a></h2>
 <p>Fun as it is to have a single static color, that's still not very exciting.</p>
 <p>We can read the current state of the keys from the <code>KEYINPUT</code> control.
-This includes both the &quot;buttons&quot; as well as the direction-pad value.</p>
+This includes both the "buttons" as well as the direction-pad value.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>// in lib.rs
@@ -1368,7 +1371,7 @@ The CPU can't just tell the GBA to make a button be pressed or not, that's not g
 <p>With this new MMIO we can read the keys and then show a color based on the value:</p>
 <pre><pre class="playground"><code class="language-rust">// in ex2.rs
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   DISPCNT.write(0);
   loop {
     let k = KEYINPUT.read();
@@ -1377,7 +1380,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 }</code></pre></pre>
 <p>Now if we run the program and press different keys we'll see the color change.</p>
 <p>Each bits of <code>KEYINPUT</code> that's connected to a key will be 0 when the key is pressed and 1 when the key is released.
-It's known as a &quot;low-active&quot; control scheme, because when a key is pressed it goes from high (1) to low (0).
+It's known as a "low-active" control scheme, because when a key is pressed it goes from high (1) to low (0).
 Bits not connected to any key will always just be 0.
 Which key controls which bit is as follows:</p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">Bit</th><th style="text-align: left">Key</th></tr></thead><tbody>
@@ -1439,7 +1442,7 @@ impl KeyInput {
 <span class="boring">}</span></code></pre></pre>
 <p>Now we can read the keys, and set the color to red or green based on if a key is pressed or not:</p>
 <pre><pre class="playground"><code class="language-rust">#[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   DISPCNT.write(0);
   loop {
     let k = KEYINPUT.read();
@@ -1451,17 +1454,17 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 <div style="break-before: page; page-break-before: always;"></div><h1 id="objects--sprites"><a class="header" href="#objects--sprites">Objects / Sprites</a></h1>
 <p>Now that we can get user input there's a <em>lot</em> of things that we could learn about next.
 Probably we should focus on how to improve our drawing abilities.</p>
-<p>Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called &quot;OBJ&quot; for short).
-The background layers let you draw a few &quot;big&quot; things (128x128 or bigger), and the objects let you draw many &quot;small&quot; things (64x64 or less).</p>
-<p>The objects have a fairly consistent behavior, while the four background layers behave differently depending on the &quot;video mode&quot; that you set in the display control.
+<p>Most of the GBA's drawing abilities involve either the 4 background layers, or the 128 objects (called "OBJ" for short).
+The background layers let you draw a few "big" things (128x128 or bigger), and the objects let you draw many "small" things (64x64 or less).</p>
+<p>The objects have a fairly consistent behavior, while the four background layers behave differently depending on the "video mode" that you set in the display control.
 That's reason enough to focus on the objects first.</p>
 <h3 id="are-they-objects-or-are-they-sprites"><a class="header" href="#are-they-objects-or-are-they-sprites">Are They Objects Or Are They Sprites?</a></h3>
-<p>The objects are sometimes called &quot;sprites&quot;.
+<p>The objects are sometimes called "sprites".
 GBATEK calls them objects, and mGBA (v0.10 at least) calls them sprites.
 Some people care about the difference between the two terms, but I don't.
-I'm just going to say &quot;object&quot; most of the time in this series because the data for them is called the &quot;object active memory&quot;.</p>
+I'm just going to say "object" most of the time in this series because the data for them is called the "object active memory".</p>
 <h2 id="display-control"><a class="header" href="#display-control">Display Control</a></h2>
-<p>We've already seen that the display control has a &quot;forced blank&quot; bit.
+<p>We've already seen that the display control has a "forced blank" bit.
 Most of the other bits are for background control stuff, but since some of them affect object display we'll just cover that right now.</p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">Bit(s)</th><th style="text-align: left">Setting</th></tr></thead><tbody>
 <tr><td style="text-align: center">0-2</td><td style="text-align: left">Video Mode</td></tr>
@@ -1483,12 +1486,12 @@ Most of the other bits are for background control stuff, but since some of them 
 <ul>
 <li><strong>Video Mode:</strong> This sets which mode the four background layers will operate with. Despite this being a 3-bit field, only modes 0 through 5 give a useful display. Modes 6 and 7 cause garbage output.</li>
 <li><strong>Frame Select:</strong> Affects which bitmap frame is used in video mode 4 or 5.</li>
-<li><strong>Unlocked H-blank:</strong> GBATEK calls this &quot;H-Blank Interval Free&quot;, and mGBA's debug controls call this &quot;Unlocked H-blank&quot;. This bit affects what you can do during the &quot;horizontal blank&quot; time between each scanline being shown, but when it's on fewer objects can be drawn. We won't be doing any per-scanline drawing for now, so we'll leave it off by default.</li>
+<li><strong>Unlocked H-blank:</strong> GBATEK calls this "H-Blank Interval Free", and mGBA's debug controls call this "Unlocked H-blank". This bit affects what you can do during the "horizontal blank" time between each scanline being shown, but when it's on fewer objects can be drawn. We won't be doing any per-scanline drawing for now, so we'll leave it off by default.</li>
 <li><strong>Linear object tile mapping:</strong> This affects how we lay out the tiles for multi-tile objects. We'll talk about the details of this in just a moment.</li>
 <li><strong>Forced Blank:</strong> Hey we know about this bit. When it's on, the display won't access any memory and will just output white pixels any time it would have rendered a pixel normally.</li>
 <li><strong>Enable Background:</strong> These four bits set if we want each of the four background layers on. For now we don't care.</li>
 <li><strong>Enable Objects:</strong> This bit sets the objects to be displayed.</li>
-<li><strong>Window Flags:</strong> These three bits affect the &quot;window&quot; special graphical feature. We'll ignore these bits for now.</li>
+<li><strong>Window Flags:</strong> These three bits affect the "window" special graphical feature. We'll ignore these bits for now.</li>
 </ul>
 <p>I'm going to use the <code>bitfrob</code> crate to get some bit manipulation utilities.</p>
 <pre><code>&gt; cargo add bitfrob
@@ -1500,7 +1503,7 @@ Most of the other bits are for background control stuff, but since some of them 
 </code></pre>
 <p>Now we can give a type to our display control value, as well as just enough methods to get started.
 Unlike with our <code>Color</code> type, with the <code>DisplayControl</code> we want to completely prevent an invalid video mode from being set, so we'll keep the <code>u16</code> that we're wrapping as a private field.
-Then we just have one &quot;builder&quot; method for each bit or group of bits that we want to be able to change.
+Then we just have one "builder" method for each bit or group of bits that we want to be able to change.
 To start we can skip all the background related bits, so we'll only need three builders.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1544,7 +1547,7 @@ const JUST_SHOW_OBJECTS: DisplayControl =
   DisplayControl::new().with_objects(true);
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   DISPCNT.write(JUST_SHOW_OBJECTS);
 
   loop {
@@ -1554,7 +1557,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 }</code></pre></pre>
 <p>For now that's all we need to do for the display control.</p>
 <h2 id="object-palette"><a class="header" href="#object-palette">Object Palette</a></h2>
-<p>Objects always need to use &quot;paletted&quot; color.
+<p>Objects always need to use "paletted" color.
 Instead of each pixel within the object's image holding a full color value, it just holds an index into the palette.
 This allows each pixel to only need 4 or 8 bits each, instead of the 16 bits needed for a complete color.</p>
 <p>The palette for objects starts at <code>0x0500_0200</code>, and it's 256 entries long.
@@ -1565,7 +1568,7 @@ A pixel value of 0 means that the object is transparent in that pixel.
 This allows for up to 255 colors to be used within a single object.</li>
 <li>When an object is set for 4bpp each non-zero pixel value is <em>the low half</em> of the full index value.
 A second setting within the object's attributes determine the upper half of the index value.
-This effectively splits the palette memory into 16 &quot;palbank&quot; groupings.
+This effectively splits the palette memory into 16 "palbank" groupings.
 As with 8bpp objects, a pixel value of 0 makes a transparent pixel.
 This allows for up to 15 colors within a single object.</li>
 </ul>
@@ -1606,7 +1609,7 @@ impl Color {
 <pre><pre class="playground"><code class="language-rust">// in ex3.rs
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);
@@ -1616,7 +1619,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
   loop {}
 }</code></pre></pre>
 <p>If we run the example in mGBA we can check our work using the debug utilities.
-In the menu, &quot;Tools -&gt; Game State Views -&gt; View Palette...&quot; will open a dialog showing all the background and object palette info.</p>
+In the menu, "Tools -&gt; Game State Views -&gt; View Palette..." will open a dialog showing all the background and object palette info.</p>
 <ul>
 <li>The backdrop color will show up in the 0th entry of the background palette.</li>
 <li>The two object palette colors will be in positions 1 and 2 of the top row.</li>
@@ -1627,7 +1630,7 @@ In the menu, &quot;Tools -&gt; Game State Views -&gt; View Palette...&quot; will
 <p>First, what is a tile exactly:</p>
 <ul>
 <li>A tile is an 8x8 square of palette indexes.</li>
-<li>A palette index can be either 4 bits per pixel (4bpp) or 8 bits per pixel (8bpp). This is the &quot;bit depth&quot; of the indexes.</li>
+<li>A palette index can be either 4 bits per pixel (4bpp) or 8 bits per pixel (8bpp). This is the "bit depth" of the indexes.</li>
 <li>The indexes store one row at a time, left to right, top to bottom.</li>
 </ul>
 <p>So we might have the following Rust constants</p>
@@ -1657,9 +1660,9 @@ pub const SIZE_OF_OBJ_TILE_MEM: usize = kilobytes!(32);
 However, the GBA's video memory does <strong>NOT</strong> work right with individual byte writes.
 We can cover the details another time, but with video memory you always have to write in 16-bit or 32-bit chunks.
 Also, the GBA is simply much faster at transferring bulk data around when it's aligned to 4.
-Data aligned to 4 can be copied one or more <code>u32</code> values at time (one or more &quot;words&quot; in ARM terms).
+Data aligned to 4 can be copied one or more <code>u32</code> values at time (one or more "words" in ARM terms).
 Being more aligned than 4 doesn't help any extra, but we want to have at least alignment 4 with anything big.
-Tiles, particularly if we've got dozens or hundreds of them, count as &quot;big enough to care about alignment&quot;.
+Tiles, particularly if we've got dozens or hundreds of them, count as "big enough to care about alignment".
 This means that instead of modeling tile data as being arrays of <code>u8</code>, we'll use smaller arrays of <code>u32</code>, which will keep the data aligned to 4.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1679,7 +1682,7 @@ pub const OBJ_TILES_U32: VolBlock&lt;u32, Safe, Safe, OBJ_TILE_MEM_WORD_COUNT&gt
   unsafe { VolBlock::new(0x0601_0000) };
 <span class="boring">}</span></code></pre></pre>
 <p>Here's where things get kinda weird.
-An object's attributes (most of which we'll cover lower down) include a &quot;Tile ID&quot; for the base tile of the object.
+An object's attributes (most of which we'll cover lower down) include a "Tile ID" for the base tile of the object.
 These tile id values are used as a 32 byte index, regardless of if the object uses 4bpp or 8bpp drawing.
 This means that they line up perfectly with a 4bpp view of the tile data, and we get 1024 IDs.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -1710,7 +1713,7 @@ For now it's enough that we've got the right addresses at all.</p>
 In this case, only object tile index values 512 and above are usable for object display.</p>
 <h2 id="object-attribute-memory"><a class="header" href="#object-attribute-memory">Object Attribute Memory</a></h2>
 <p>Separate from the object tile memory, there's also the Object Attribute Memory (OAM) region.
-This has space for 128 &quot;attribute&quot; entries, which defines how the objects are shown.</p>
+This has space for 128 "attribute" entries, which defines how the objects are shown.</p>
 <p>Each attribute needs 48 bits.
 This is an unfortunate number of bits, because it's not a clean power of 2.
 Normally we refer to each attribute entry as having three <code>u16</code> attributes just called 0, 1, and 2.</p>
@@ -1787,11 +1790,11 @@ It's pretty unlikely to matter, but maybe.</p>
 The screen is 160 pixels tall, and the coordinates wrap.
 If you want something to appear to move up past the top of the screen, then wrap the Y value around.
 Alternately, you can do the position math using signed values and then <code>as</code> cast the value to unsigned.</li>
-<li>Bits 8 and 9 set what mGBA calls the &quot;transform&quot; of the object:
+<li>Bits 8 and 9 set what mGBA calls the "transform" of the object:
 <ul>
 <li>0 is no transform.</li>
 <li>1 is affine rendering. Which affine entry is used is set in attribute 1.</li>
-<li>2 is no transform and the object not drawn (it's &quot;disabled&quot;).</li>
+<li>2 is no transform and the object not drawn (it's "disabled").</li>
 <li>3 is just like 1 but the object is rendered with double size.</li>
 </ul>
 </li>
@@ -1806,7 +1809,7 @@ Alternately, you can do the position math using signed values and then <code>as<
 <li>Bit 12 sets if the object uses the Mosaic special effect.
 This can be enabled/disabled seprately from the other effects above.</li>
 <li>Bit 13 sets if the object uses 8bpp (bit set), or 4bpp (bit cleared).</li>
-<li>Bits 14 and 15 set the &quot;shape&quot; of the object. The exact dimensions also depend on the &quot;size&quot; set in attribute 1
+<li>Bits 14 and 15 set the "shape" of the object. The exact dimensions also depend on the "size" set in attribute 1
 <ul>
 <li>0 is square</li>
 <li>1 is wider</li>
@@ -1837,7 +1840,7 @@ This works basically the same as with the Y coordinate, but the screen is 260 pi
 <ul>
 <li>Bits 0 through 9 set the base tile index of the object.
 As mentioned above, in video modes 3, 4, and 5 this needs to be 512 or more.</li>
-<li>Bits 10 and 11 are the &quot;priority&quot; value.
+<li>Bits 10 and 11 are the "priority" value.
 Lower priority objects and layers are sorted closer to the viewer, and so they are what's seen if they overlap something farther away.
 Within a given priority layer, objects always draw over backgrounds, and lower index objects/backgrounds draw over higher index ones.</li>
 <li>Bits 12 through 15 set the palette bank the object uses if it's using 4bpp.</li>
@@ -1846,8 +1849,8 @@ Within a given priority layer, objects always draw over backgrounds, and lower i
 <p>There's a limit to how many objects can be drawn per scanline, but it's not a specific number of objects.
 Instead, the OAM engine has a buffer that's as wide as the screen, and there's a time limit per scanline on filling the buffer.</p>
 <ul>
-<li>When the &quot;Unlocked H-blank&quot; bit is <strong>clear</strong> in <code>DISPCNT</code> you get 1210 cycles (304 * 4 - 6)</li>
-<li>When the &quot;Unlocked H-blank&quot; bit is <strong>set</strong> in <code>DISPCNT</code> you get 954 cycles (240 * 4 - 6)</li>
+<li>When the "Unlocked H-blank" bit is <strong>clear</strong> in <code>DISPCNT</code> you get 1210 cycles (304 * 4 - 6)</li>
+<li>When the "Unlocked H-blank" bit is <strong>set</strong> in <code>DISPCNT</code> you get 954 cycles (240 * 4 - 6)</li>
 </ul>
 <p>The number of cycles each object consumes depends on the object's horizontal size:</p>
 <ul>
@@ -1855,7 +1858,7 @@ Instead, the OAM engine has a buffer that's as wide as the screen, and there's a
 <li>Affine objects consume <code>2 * width + 10</code> cycles.</li>
 </ul>
 <p>Objects are processed by their index order.
-Objects not on the current scanline, horizontally/vertically off-screen, or that are &quot;disabled&quot; as their attribute 0 transform, are skipped in rendering but still take two cycles to process.
+Objects not on the current scanline, horizontally/vertically off-screen, or that are "disabled" as their attribute 0 transform, are skipped in rendering but still take two cycles to process.
 Even when an object won't be drawn on the current scanline the OAM engine has to look at the attributes to know that.
 If not all objects are handled and time runs out then any unprocessed objects simply won't be drawn on this scanline.</p>
 <h2 id="showing-static-objects"><a class="header" href="#showing-static-objects">Showing Static Objects</a></h2>
@@ -1863,7 +1866,7 @@ If not all objects are handled and time runs out then any unprocessed objects si
 <p>First we want to set at least one tile in the object tile memory to some sort of pattern.
 If we write a hex <code>u32</code> literal, then each digit of the hex value will be 4 bits, so we can make a 4bpp tile pretty easy.
 One catch is that the indexes fill the tile from left to right, but we write numbers in code with the low-place-value digits on the right.
-So our &quot;tile&quot; as a <code>u32</code> literal will be left-right flipped from how it'll appear on the GBA:</p>
+So our "tile" as a <code>u32</code> literal will be left-right flipped from how it'll appear on the GBA:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>/// A tile with an extra notch on the upper left.
@@ -1884,7 +1887,7 @@ const TILE_UP_LEFT: [u32; 8] = [
 <span class="boring">}</span></code></pre></pre>
 <p>And we can copy the data into object tile 1 in our <code>main</code> function.</p>
 <pre><pre class="playground"><code class="language-rust">#[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);
@@ -1919,7 +1922,7 @@ pub extern &quot;C&quot; fn main() -&gt; ! {
 <span class="boring">}</span></code></pre></pre>
 <p>But when we make it taller instead, we see... just one tile?
 Why isn't there a second tile drawn below the first?</p>
-<p>This is that &quot;Linear object tile mapping&quot; flag from way back with the Display Control.
+<p>This is that "Linear object tile mapping" flag from way back with the Display Control.
 It defaults to <em>off</em>, so by default when we want to have an object more than 8 pixels tall, the next row of the object will use +32 indexes from the previous row.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1934,7 +1937,7 @@ It defaults to <em>off</em>, so by default when we want to have an object more t
   DisplayControl::new().with_objects(true).with_linear_obj_tiles(true);
 
 #[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);
@@ -1989,7 +1992,7 @@ The user will probably <em>want</em> to support signed positions so that stuff c
 <span class="boring">}</span></code></pre></pre>
 <p>And our final <code>main</code> goes like this:</p>
 <pre><pre class="playground"><code class="language-rust">#[no_mangle]
-pub extern &quot;C&quot; fn main() -&gt; ! {
+pub extern "C" fn main() -&gt; ! {
   BACKDROP.write(Color::MAGENTA);
   OBJ_PALETTE.index(1).write(Color::RED);
   OBJ_PALETTE.index(2).write(Color::WHITE);

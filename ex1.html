@@ -98,7 +98,9 @@
             <div class="sidebar-scrollbox">
                 <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="ex1.html" class="active"><strong aria-hidden="true">1.</strong> A Basic Executable</a></li><li class="chapter-item expanded "><a href="ex2.html"><strong aria-hidden="true">2.</strong> User Input</a></li><li class="chapter-item expanded "><a href="ex3.html"><strong aria-hidden="true">3.</strong> Objects / Sprites</a></li></ol>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
         </nav>
 
         <!-- Track and set sidebar scroll position -->
@@ -189,36 +191,36 @@
 <pre><code class="language-toml"># Cargo.toml
 
 [package]
-name = &quot;gba_from_scratch&quot;
-version = &quot;0.1.0&quot;
-edition = &quot;2021&quot;
+name = "gba_from_scratch"
+version = "0.1.0"
+edition = "2021"
 </code></pre>
 <p>And we want some sort of program to run so let's make an example called <code>ex1.rs</code> in the <code>examples/</code> directory.
-It can just be a classic &quot;Hello, World&quot; type program to start.</p>
+It can just be a classic "Hello, World" type program to start.</p>
 <pre><pre class="playground"><code class="language-rust">// examples/ex1.rs
 
 fn main() {
-  println!(&quot;hello&quot;);
+  println!("hello");
 }</code></pre></pre>
-<p>Since we're not running the compiler on the GBA itself, then we'll need to &quot;cross-compile&quot; our program.
-It's called &quot;cross compilation&quot; when you build a program for some system <em>other</em> than the system that you're running the compiler on.
-The system running the compiler is called the &quot;host&quot; system, and the system you're building for is called the &quot;target&quot; system.
+<p>Since we're not running the compiler on the GBA itself, then we'll need to "cross-compile" our program.
+It's called "cross compilation" when you build a program for some system <em>other</em> than the system that you're running the compiler on.
+The system running the compiler is called the "host" system, and the system you're building for is called the "target" system.
 In our case, the host system can be basically anything that can run a Rust toolchain.
 I've had success on Windows, Linux, and Mac, there's no big difficulties.</p>
 <p>To do a cross compile, we pass <a href="https://doc.rust-lang.org/cargo/commands/cargo-build.html#compilation-options">--target</a> to <code>cargo</code>.
 If we look up the <a href="https://en.wikipedia.org/wiki/Game_Boy_Advance">Game Boy Advance</a> on wikipedia, we can see that it has an <a href="https://en.wikipedia.org/wiki/ARM7#ARM7TDMI">ARM7TDMI</a> CPU.
-The &quot;ARM7T&quot; part means that it uses the &quot;ARMv4T&quot; CPU architecture.
-Now we go the <a href="https://doc.rust-lang.org/nightly/rustc/platform-support.html">Platform Support</a> page and use &quot;ctrl+F&quot; to look for &quot;ARMv4T&quot;.
+The "ARM7T" part means that it uses the "ARMv4T" CPU architecture.
+Now we go the <a href="https://doc.rust-lang.org/nightly/rustc/platform-support.html">Platform Support</a> page and use "ctrl+F" to look for "ARMv4T".
 We can see three(-ish) entries that might(?) be what we want.</p>
 <ul>
 <li><code>armv4t-none-eabi</code></li>
 <li><code>armv4t-unknown-linux-gnueabi</code></li>
 <li><code>thumbv4t-none-eabi</code></li>
 </ul>
-<p>This is the part where my &quot;teach like you're telling a story&quot; style breaks down a bit.
+<p>This is the part where my "teach like you're telling a story" style breaks down a bit.
 What should happen next is that we pick the <code>thumbv4t-none-eabi</code> target.
 Except there's not an easy to find document that tells you this step that I can just link to and have you read a few lines.
-The shortest version of the full explanation is something like &quot;Many ARM CPUs support two code 'states', and one of them is called '<a href="https://en.wikipedia.org/wiki/ARM_architecture_family#Thumb">thumb</a>', and that's the better default on the GBA.&quot;
+The shortest version of the full explanation is something like "Many ARM CPUs support two code 'states', and one of them is called '<a href="https://en.wikipedia.org/wiki/ARM_architecture_family#Thumb">thumb</a>', and that's the better default on the GBA."
 We can certainly talk more about that later, but for now you just gotta go with it.</p>
 <p>Let's see what happens when we pass <code>--target thumbv4t-none-eabi</code> as part of a call to <code>cargo</code>:</p>
 <pre><code>&gt;cargo build --example ex1 --target thumbv4t-none-eabi
@@ -245,7 +247,7 @@ note: not all platforms have the standard library pre-compiled: https://doc.rust
 help: consider using `cargo build -Z build-std` instead
 </code></pre>
 <p>Ah, dang.
-If we double check the Platform Support page we might see that <code>thumbv4t-none-eabi</code> is in the &quot;Tier 3&quot; section.
+If we double check the Platform Support page we might see that <code>thumbv4t-none-eabi</code> is in the "Tier 3" section.
 Tier 3 targets don't have a standard library available in <code>rustup</code>.</p>
 <p>How about this <code>build-std</code> thing?
 The <code>-Z</code> flags are all unstable flags, so we can check the <a href="https://doc.rust-lang.org/cargo/reference/unstable.html">unstable section</a> of the cargo manual.
@@ -311,7 +313,7 @@ Lets change the example.</p>
 #![no_std]
 
 fn main() {
-  println!(&quot;hello&quot;);
+  println!("hello");
 }
 </code></pre>
 <p>And we need to fix our <code>lib.rs</code> to also be <code>no_std</code>.
@@ -329,12 +331,12 @@ Here's the error.</p>
 error: cannot find macro `println` in this scope
  --&gt; examples/ex1.rs:4:3
   |
-4 |   println!(&quot;hello&quot;);
+4 |   println!("hello");
   |   ^^^^^^^
 
 error: `#[panic_handler]` function required, but not found
 
-error: could not compile `gba_from_scratch` (example &quot;ex1&quot;) due to 2 previous errors
+error: could not compile `gba_from_scratch` (example "ex1") due to 2 previous errors
 </code></pre>
 <p>Well, we can comment out the <code>println!</code>.
 For the panic handler, we go to the <a href="https://doc.rust-lang.org/reference/attributes.html">Attributes</a> part of the rust reference.
@@ -355,7 +357,7 @@ fn panic_handler(_: &amp;core::panic::PanicInfo) -&gt; ! {
    Compiling gba_from_scratch v0.1.0 (/Users/dg/gba-from-scratch)
 error: requires `start` lang_item
 
-error: could not compile `gba_from_scratch` (example &quot;ex1&quot;) due to previous error
+error: could not compile `gba_from_scratch` (example "ex1") due to previous error
 </code></pre>
 <p>Alright so what's this <code>start</code> lang item deal?
 Well it has to do with the operating system being able to run your executable.
@@ -387,7 +389,7 @@ warning: function `main` is never used
   |
   = note: `#[warn(dead_code)]` on by default
 
-warning: `gba_from_scratch` (example &quot;ex1&quot;) generated 1 warning
+warning: `gba_from_scratch` (example "ex1") generated 1 warning
     Finished dev [unoptimized + debuginfo] target(s) in 0.64s
 </code></pre>
 <p>Okay.
@@ -400,8 +402,8 @@ On my Windows machine I just made a copy of <code>mgba.exe</code> that's called 
 <pre><code>&gt; mgba target/thumbv4t-none-eabi/debug/examples/ex1
 </code></pre>
 <p>The emulator starts and then... shows a dialog box.
-&quot;An error occurred.&quot; says the box's title bar.
-&quot;Could not load game. Are you sure it's in the correct format?&quot;
+"An error occurred." says the box's title bar.
+"Could not load game. Are you sure it's in the correct format?"
 Well, sorry mgba, but we're not sure it's in the correct format.
 In fact, we're pretty sure it's <em>not</em> the correct format right now.
 I guess we'll have to inspect the compilation output.</p>
@@ -412,7 +414,7 @@ This includes our <code>thumbv4t</code> program, as well as other variants of AR
 You can get it from their website, or if you're on a Linux you can probably get it from your package manager.</p>
 <p>The binutils package for a target family has many individual tools.
 The ones we'll be using will all be named <code>arm-none-eabi-</code> to start, to distinguish them from the same tool for other targets.
-So if we want to use &quot;objdump&quot; we call it with <code>arm-none-eabi-objdump</code> and so on.
+So if we want to use "objdump" we call it with <code>arm-none-eabi-objdump</code> and so on.
 That's exactly what we want to use right now.
 We pass the name of the compiled executable, and then whichever other options we want.
 For now let's look at the <code>--section-headers</code></p>
@@ -451,18 +453,18 @@ Idx Name          Size      VMA       LMA       File off  Algn
 </ul>
 <p>Which means... according to the chart... none of this data would end up in the ROM?
 I guess that means that, if we extracted our raw program from the <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> container file that the compiler uses, we would end up with a totally blank ROM.
-That certainly doesn't sound like what mgba would call the &quot;correct format&quot;.</p>
+That certainly doesn't sound like what mgba would call the "correct format".</p>
 <h2 id="linker-scripts"><a class="header" href="#linker-scripts">Linker Scripts</a></h2>
 <p>What's wrong is that we need to adjust the <a href="https://sourceware.org/binutils/docs/ld/Scripts.html">linker script</a>.
 That link goes to the documentation for the binutils linker (called <code>ld</code>), and technically we're actually using the linker that ships with the compiler (called <code>rust-lld</code>).
-<code>rust-lld</code> is the Rust version of <code>lld</code>, which is LLVM's linker that's intended to be a &quot;drop in&quot; replacement for GNU's <code>ld</code>.
+<code>rust-lld</code> is the Rust version of <code>lld</code>, which is LLVM's linker that's intended to be a "drop in" replacement for GNU's <code>ld</code>.
 Both linkers use a linker script system, and they both even use the same linker script format.
-I tried to find an in depth manual for <code>lld</code> specifically, but all I could find was the top level &quot;man page&quot; explanations.
+I tried to find an in depth manual for <code>lld</code> specifically, but all I could find was the top level "man page" explanations.
 Referring to the the GNU <code>ld</code> manual will have to do.</p>
-<p>You don't have to read the whole manual, the short story goes like this: linkers take one or more &quot;object&quot; files and &quot;link&quot; them into a single &quot;executable&quot; file.
+<p>You don't have to read the whole manual, the short story goes like this: linkers take one or more "object" files and "link" them into a single "executable" file.
 The linker script is what guides the linker in exactly what to do.
 If you don't say what script to use then the linker will use a default linker script that it keeps wherever.
-When the target is a &quot;normal&quot; target like Windows or Mac then using a default linker script is just fine.
+When the target is a "normal" target like Windows or Mac then using a default linker script is just fine.
 When the target is something a little more esoteric, like most embedded devices, including the GBA, then the default won't be good enough.
 We'll have to write our own script and make the linker use that.</p>
 <p>One complexity here is that the linker script to use is an argument passed to the linker.
@@ -473,26 +475,26 @@ As much as possible we'd like <code>cargo build</code> to work.
 We could use a <code>build.rs</code> file to pass an arg to the linker, but making a build script just to pass one argument seems like maybe overkill.
 Probably we should just set it as part of our the <code>RUSTFLAGS</code> environment variable.
 The catch with <code>RUSTFLAGS</code> is that any time you change it you have to build <em>the entire crate graph</em> again.
-We want to &quot;write it down&quot; (so to speak) and have it automatically be the same every time.
+We want to "write it down" (so to speak) and have it automatically be the same every time.
 This can be done with a <a href="https://doc.rust-lang.org/cargo/reference/config.html#configuration">cargo configuration</a> file.</p>
 <p>First let's make a blank <code>normal_boot.ld</code> file in a <code>linker_scripts/</code> folder.
 Then in the <code>.cargo</code> folder we fill in <code>config.toml</code></p>
 <pre><code class="language-toml"># .cargo/config.toml
 
 [target.thumbv4t-none-eabi]
-rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+rustflags = ["-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
 </code></pre>
 <p>while we're at it, we can even set a default target (which is used when we don't specify <code>--target</code>, and we can configure for <code>build-std</code> to be automatically be used, all in the same file.</p>
 <pre><code class="language-toml"># .cargo/config.toml
 
 [unstable]
-build-std = [&quot;core&quot;]
+build-std = ["core"]
 
 [build]
-target = &quot;thumbv4t-none-eabi&quot;
+target = "thumbv4t-none-eabi"
 
 [target.thumbv4t-none-eabi]
-rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
+rustflags = ["-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
 </code></pre>
 <p>Great, let's try it out</p>
 <pre><code>&gt; cargo build --example ex1
@@ -504,14 +506,14 @@ warning: function `main` is never used
   |
   = note: `#[warn(dead_code)]` on by default
 
-warning: `gba_from_scratch` (example &quot;ex1&quot;) generated 1 warning
+warning: `gba_from_scratch` (example "ex1") generated 1 warning
     Finished dev [unoptimized + debuginfo] target(s) in 0.10s
 </code></pre>
 <p>Cool.
 It's a lot less to type, and we're ready to fill in our linker script.</p>
 <p>Our linker script is called <code>normal_boot.ld</code> because there's two ways for the GBA to boot up.
-One of them is the &quot;normal&quot; style with a program running off of the game pak.
-The other is &quot;multiboot&quot; where the GBA can download a program over the link cable.
+One of them is the "normal" style with a program running off of the game pak.
+The other is "multiboot" where the GBA can download a program over the link cable.
 Since we might want to do multiboot some day, we might as well give our linker script a specific name to start with.
 Once things are set up we won't really have to think about it on a regular basis, so it's fine.</p>
 <p>There's three things we'll have to concern ourselves with:</p>
@@ -576,7 +578,7 @@ SECTIONS {
   } &gt;rom
 }
 </code></pre>
-<p>This isn't a complete and &quot;final&quot; linker script, but for now it's enough to let us proceed.</p>
+<p>This isn't a complete and "final" linker script, but for now it's enough to let us proceed.</p>
 <p>If we rebuild the program right now we still won't get anything in the output <code>.text</code> section.
 Remember that dead code warning we keep getting on our <code>main</code> function?
 Nothing in our program ever calls <code>main</code>, and it's not public for outsiders to call, so it gets discarded during linking.
@@ -591,7 +593,7 @@ When the GBA first boots the BIOS (which is part of the GBA itself, not part of 
 It and plays the boot animation and sound that you're probably familiar with, then does a checksum on our ROM's header data.
 If the checksum passes the BIOS jumps control to <code>0x0800_0000</code> (the start of ROM).
 That's where our <code>_start</code> will be.
-The first instruction can be &quot;anything&quot; but immediateley after that is the rest of the header data.
+The first instruction can be "anything" but immediateley after that is the rest of the header data.
 That means that in practice the very first instruction of <code>_start</code> has to be a jump <em>past</em> the rest of the header data, since the header data isn't executable code.</p>
 <p>Sticking non-executable data into the middle of a function isn't something that the compiler is really capable of dealing with, so we'll have to take direct control of the situation.
 We could do this using either <a href="https://doc.rust-lang.org/core/arch/macro.global_asm.html">global_assembly!</a> or a <a href="https://github.com/rust-lang/rust/issues/90957">#[naked]</a> function.
@@ -605,8 +607,8 @@ In addition to marking it as <code>#[naked]</code>, we also mark it <code>#[no_m
 We need to use <code>#[instruction_set(arm::a32)]</code> as well.
 This is part of that arm/thumb thing from before.
 Because the BIOS jumps to the start of the ROM with the CPU in a32 mode, our function must be encoded appropriately.
-Since <code>_start</code> has got to specifically at the very start of the ROM we'll use <code>#[link_section = &quot;.text._start&quot;]</code> to assign our function a specific section name we can use in our linker script.
-Since <code>_start</code> is going to be &quot;called&quot; by the outside world we have to assign it the <code>extern &quot;C&quot;</code> ABI.
+Since <code>_start</code> has got to specifically at the very start of the ROM we'll use <code>#[link_section = ".text._start"]</code> to assign our function a specific section name we can use in our linker script.
+Since <code>_start</code> is going to be "called" by the outside world we have to assign it the <code>extern "C"</code> ABI.
 Since it should never return we will mark the return type as <code>-&gt; !</code>.
 So far it all looks like this:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -616,8 +618,8 @@ So far it all looks like this:</p>
 #[naked]
 #[no_mangle]
 #[instruction_set(arm::a32)]
-#[link_section = &quot;.text._start&quot;]
-unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+#[link_section = ".text._start"]
+unsafe extern "C" fn _start() -&gt; ! {
   todo!()
 }
 <span class="boring">}</span></code></pre></pre>
@@ -629,9 +631,9 @@ Let's look at it on its own.</p>
 1:
 b 1b
 </code></pre>
-<p>In the first line we branch (<code>b</code>) to the label <code>1</code> that is &quot;forward&quot; from the instruction (<code>1f</code>).</p>
+<p>In the first line we branch (<code>b</code>) to the label <code>1</code> that is "forward" from the instruction (<code>1f</code>).</p>
 <p>Then with <code>.space</code> we put 0xE0 blank bytes.
-This is called a &quot;directive&quot;, it doesn't emit an instruction directly, instead it tells the assembler to do a special action.
+This is called a "directive", it doesn't emit an instruction directly, instead it tells the assembler to do a special action.
 We can tell it's a directive because it has a <code>.</code> at the beginning.
 The blank space is where the header data can go when we need to fill it in.
 mgba doesn't check the header, so during development it's fine to leave the header blank.
@@ -646,7 +648,7 @@ When you jump to a numbered label (forward or back), it just jumps to the closes
 Note that a label <em>can</em> have something else on the same line following the <code>:</code>.
 Usually a label will be on a line of its own so that it stands out a little more in the code, but that's just a code style thing.
 Something can follow a label on the same line as well.
-If a label is on a line of its own, the label &quot;points to&quot; the next line that has a non-label thing on it.
+If a label is on a line of its own, the label "points to" the next line that has a non-label thing on it.
 You can also have more than one label point at the same line, if necessary.</p>
 <p>Finally, our second actual instruction is that we want to branch backward to the label <code>1</code>.
 Since that <code>1</code> label points at the branch itself, this instruction causes an infinite loop.
@@ -660,13 +662,14 @@ So when we put it all together we get this:</p>
 
 #[naked]
 #[no_mangle]
-#[link_section = &quot;.text._start&quot;]
-unsafe extern &quot;C&quot; fn _start() -&gt; ! {
+#[instruction_set(arm::a32)]
+#[link_section = ".text._start"]
+unsafe extern "C" fn _start() -&gt; ! {
   core::arch::asm! {
-    &quot;b 1f&quot;,
-    &quot;.space 0xE0&quot;,
-    &quot;1:&quot;,
-    &quot;b 1b&quot;,
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "b 1b",
     options(noreturn)
   }
 }
@@ -732,13 +735,13 @@ Caused by:
   %1 is not a valid Win32 application. (os error 193)
 </code></pre>
 <p>Ah, right, Windows doesn't know how to run GBA programs, of course.</p>
-<p>Instead, let's adjust the <code>.cargo/config.toml</code> to set a &quot;runner&quot; value in our target confituration.
+<p>Instead, let's adjust the <code>.cargo/config.toml</code> to set a "runner" value in our target confituration.
 When we have a runner set, <code>cargo run</code> will call the runner program and pass the program we picked as the first argument.</p>
 <pre><code class="language-toml"># .cargo/config.toml 
 
 [target.thumbv4t-none-eabi]
-rustflags = [&quot;-Clink-arg=-Tlinker_scripts/normal_boot.ld&quot;]
-runner = &quot;mgba-qt&quot; #remove the -qt part if you're on Windows!
+rustflags = ["-Clink-arg=-Tlinker_scripts/normal_boot.ld"]
+runner = "mgba-qt" #remove the -qt part if you're on Windows!
 </code></pre>
 <p>And so we try again</p>
 <pre><code>&gt; cargo run --example ex1
@@ -781,7 +784,7 @@ We've got so much ROM space available that an occasional 2 or 4 bytes extra won'
 <h2 id="proving-our-program-is-doing-something"><a class="header" href="#proving-our-program-is-doing-something">Proving Our Program Is Doing Something</a></h2>
 <p>It's all nice and well to see a white screen, but let's finish up this section by having our program do something, anything at all, which lets us see that we're really having an effect on the GBA.</p>
 <p>The simplest thing to do would be to make the screen turn on black instead of white.
-When the BIOS transfers control to our program a thing called the &quot;forced blank&quot; mode is active.
+When the BIOS transfers control to our program a thing called the "forced blank" mode is active.
 This makes the display draw all pixels as white.
 If we turn off the forced blank bit we'll get a black screen instead.</p>
 <p>All we have to do is add a few more lines of assembly to our <code>_start</code> function:</p>
@@ -790,14 +793,14 @@ If we turn off the forced blank bit we'll get a black screen instead.</p>
 </span>// in `main` of ex1.rs
 
   core::arch::asm! {
-    &quot;b 1f&quot;,
-    &quot;.space 0xE0&quot;,
-    &quot;1:&quot;,
-    &quot;mov r0, #0x04000000&quot;,
-    &quot;mov r1, #0&quot;,
-    &quot;strh r1, [r0]&quot;,
-    &quot;2:&quot;,
-    &quot;b 2b&quot;,
+    "b 1f",
+    ".space 0xE0",
+    "1:",
+    "mov r0, #0x04000000",
+    "mov r1, #0",
+    "strh r1, [r0]",
+    "2:",
+    "b 2b",
     options(noreturn)
   }
 <span class="boring">}</span></code></pre></pre>
@@ -806,7 +809,7 @@ If we turn off the forced blank bit we'll get a black screen instead.</p>
 mov r1, #0
 strh r1, [r0]
 </code></pre>
-<p><code>mov</code> will &quot;move&quot; a value into a register.
+<p><code>mov</code> will "move" a value into a register.
 This shares the usual assignment syntax of Rust and most other programming languages:
 the destination register is on the left,
 and the source data to move into that register is on the right.
@@ -815,16 +818,16 @@ So you could think of it being <em>similar</em> to</p>
 </span><span class="boring">fn main() {
 </span>let r0 = 0x04000000;
 <span class="boring">}</span></code></pre></pre>
-<p>The <code>#</code> means that the value is an &quot;immediate&quot; value.
-It gets encoded into the instruction itself, so it doesn't have to &quot;come from&quot; anywhere else.
+<p>The <code>#</code> means that the value is an "immediate" value.
+It gets encoded into the instruction itself, so it doesn't have to "come from" anywhere else.
 With LLVM's assembler it seems like actually putting the <code>#</code> before an immediate value is optional (that is: the program will compile the same without it),
 but on some assemblers putting the <code>#</code> is required, so I'll be putting it in the tutorial code.</p>
 <p>After we move values into <code>r0</code> and <code>r1</code> we have a <code>strh</code>.
-This will &quot;store(half)&quot; the data in the first argument to the address in the second argument.
+This will "store(half)" the data in the first argument to the address in the second argument.
 In other words, it writes the lower 16 bits of the register to the address, as if the address was a <code>*mut u16</code>.
 The argument order for single loads and stores on ARM is that the address is always last, and in square brackets.
 The square brackets make it fairly easy to spot when skimming through a big pile of assembly.</p>
-<p>After doing that <code>strh</code> we have an &quot;empty loop&quot; like we had before, but just using the label <code>2</code> instead of <code>1</code> this time.</p>
+<p>After doing that <code>strh</code> we have an "empty loop" like we had before, but just using the label <code>2</code> instead of <code>1</code> this time.</p>
 <p>And if we turn on the program...</p>
 <pre><code class="language-txt">cargo run --example ex1
 </code></pre>
