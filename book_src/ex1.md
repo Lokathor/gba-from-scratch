@@ -586,6 +586,7 @@ So when we put it all together we get this:
 
 #[naked]
 #[no_mangle]
+#[instruction_set(arm::a32)]
 #[link_section = ".text._start"]
 unsafe extern "C" fn _start() -> ! {
   core::arch::asm! {
